@@ -1,0 +1,72 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "backend", "backend\backend.csproj", "{B5CEE1AB-68C5-FCEC-EA61-653FFB609ED2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cdk-recyler", "cdk-recyler", "{3859CBC8-FCD9-4554-7C50-0E4B3C3FEE97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "node_modules", "node_modules", "{32CAC2E0-B8C9-C739-B151-2ED035535877}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aws-cdk", "aws-cdk", "{F05C60FD-9299-50D8-6BA5-856F60AD022B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{E381C524-0AB1-D37C-7D26-B6F91FC9FC48}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "init-templates", "init-templates", "{471ACD66-9E44-C48D-C69D-856411DA1BED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{F64CA52C-A256-656F-DAA8-3156C9A5A664}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp", "csharp", "{F7F616C1-42FB-123E-B70C-4E04B0B36A48}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A6783715-252D-8D87-04DA-264FBAF52F7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "%name.PascalCased%.template", "cdk-recyler\node_modules\aws-cdk\lib\init-templates\app\csharp\src\%name.PascalCased%\%name.PascalCased%.template.csproj", "{A7FCAE70-2B52-1B75-31B2-00B23600CA43}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample-app", "sample-app", "{A4635CD1-69FE-5838-8D37-0E90BFA2F026}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp", "csharp", "{FA134BB3-7BE0-5194-C85F-7AA2EAC0D1C3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A0B76DBA-69F0-3E1C-1E62-95A454F7BC50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "%name.PascalCased%.template", "cdk-recyler\node_modules\aws-cdk\lib\init-templates\sample-app\csharp\src\%name.PascalCased%\%name.PascalCased%.template.csproj", "{E00099A8-90AB-913B-947E-913183EFE5B0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B5CEE1AB-68C5-FCEC-EA61-653FFB609ED2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5CEE1AB-68C5-FCEC-EA61-653FFB609ED2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5CEE1AB-68C5-FCEC-EA61-653FFB609ED2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5CEE1AB-68C5-FCEC-EA61-653FFB609ED2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7FCAE70-2B52-1B75-31B2-00B23600CA43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7FCAE70-2B52-1B75-31B2-00B23600CA43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7FCAE70-2B52-1B75-31B2-00B23600CA43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7FCAE70-2B52-1B75-31B2-00B23600CA43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E00099A8-90AB-913B-947E-913183EFE5B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E00099A8-90AB-913B-947E-913183EFE5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E00099A8-90AB-913B-947E-913183EFE5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E00099A8-90AB-913B-947E-913183EFE5B0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{32CAC2E0-B8C9-C739-B151-2ED035535877} = {3859CBC8-FCD9-4554-7C50-0E4B3C3FEE97}
+		{F05C60FD-9299-50D8-6BA5-856F60AD022B} = {32CAC2E0-B8C9-C739-B151-2ED035535877}
+		{E381C524-0AB1-D37C-7D26-B6F91FC9FC48} = {F05C60FD-9299-50D8-6BA5-856F60AD022B}
+		{471ACD66-9E44-C48D-C69D-856411DA1BED} = {E381C524-0AB1-D37C-7D26-B6F91FC9FC48}
+		{F64CA52C-A256-656F-DAA8-3156C9A5A664} = {471ACD66-9E44-C48D-C69D-856411DA1BED}
+		{F7F616C1-42FB-123E-B70C-4E04B0B36A48} = {F64CA52C-A256-656F-DAA8-3156C9A5A664}
+		{A6783715-252D-8D87-04DA-264FBAF52F7D} = {F7F616C1-42FB-123E-B70C-4E04B0B36A48}
+		{A7FCAE70-2B52-1B75-31B2-00B23600CA43} = {A6783715-252D-8D87-04DA-264FBAF52F7D}
+		{A4635CD1-69FE-5838-8D37-0E90BFA2F026} = {471ACD66-9E44-C48D-C69D-856411DA1BED}
+		{FA134BB3-7BE0-5194-C85F-7AA2EAC0D1C3} = {A4635CD1-69FE-5838-8D37-0E90BFA2F026}
+		{A0B76DBA-69F0-3E1C-1E62-95A454F7BC50} = {FA134BB3-7BE0-5194-C85F-7AA2EAC0D1C3}
+		{E00099A8-90AB-913B-947E-913183EFE5B0} = {A0B76DBA-69F0-3E1C-1E62-95A454F7BC50}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {902B0FBD-1389-42DC-B8CD-19B263EB2C73}
+	EndGlobalSection
+EndGlobal
