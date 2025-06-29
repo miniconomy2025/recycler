@@ -36,7 +36,7 @@ public class OrdersController(IMediator mediator) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> SaveQuote([FromBody] CreateOrderCommand request)
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
     {
         return Ok(await mediator.Send(request));
     }
