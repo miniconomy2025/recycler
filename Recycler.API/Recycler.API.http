@@ -1,0 +1,6 @@
+@Recycler.API_HostAddress = http://localhost:5027
+
+GET {{Recycler.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
