@@ -38,8 +38,6 @@ CREATE TABLE Phone (
     id SERIAL CONSTRAINT pk_phone PRIMARY KEY,
     phone_brand_id INTEGER NOT NULL,
     model VARCHAR(50) UNIQUE NOT NULL,
---     condition VARCHAR(3) NOT NULL,
---     returned_date TIMESTAMP
     CONSTRAINT fk_phone_phone_brand_id
         FOREIGN KEY (phone_brand_id)
             REFERENCES PhoneBrand(id)
@@ -55,7 +53,7 @@ CREATE TABLE RawMaterial (
 CREATE TABLE PhoneInventory (
     id SERIAL CONSTRAINT pk_phone_inventory PRIMARY KEY,
     phone_id INTEGER UNIQUE NOT NULL,
-    quantity_in_thousands DECIMAL(10,2) NOT NULL DEFAULT 0,
+    quantity INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT fk_phone
         FOREIGN KEY (phone_id)
         REFERENCES Phone(id)
@@ -70,7 +68,7 @@ CREATE TABLE PhoneParts (
 CREATE TABLE MaterialInventory (
     id SERIAL CONSTRAINT pk_material_inventory PRIMARY KEY,
     material_id INTEGER UNIQUE NOT NULL,
-    available_quantity_in_tonnes DECIMAL(10,2) NOT NULL DEFAULT 0,
+    available_quantity_in_kg INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT fk_material
         FOREIGN KEY (material_id)
         REFERENCES RawMaterial(id)
@@ -102,7 +100,7 @@ CREATE TABLE OrderItems (
     id SERIAL CONSTRAINT pk_order_items PRIMARY KEY,
     order_id INTEGER NOT NULL,
     material_id INTEGER NOT NULL,
-    quantity_in_tonnes INTEGER NOT NULL,
+    quantity_in_kg INTEGER NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     CONSTRAINT fk_order
         FOREIGN KEY (order_id)
