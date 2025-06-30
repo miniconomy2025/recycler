@@ -2,52 +2,24 @@ using MediatR;
 
 namespace Recycler.API;
 
-public class GetOrderByOrderNumberHandler : IRequestHandler<GetOrderByOrderNumberQuery, Order>
+public class GetOrderByOrderNumberHandler(
+    IGenericRepository<Order> orderRepository,
+    IGenericRepository<OrderStatus> orderStatusRepository,
+    IGenericRepository<OrderItem> orderItemRepository) 
+    : IRequestHandler<GetOrderByOrderNumberQuery, OrderDto>
 {
-    public async Task<Order> Handle(GetOrderByOrderNumberQuery request, CancellationToken cancellationToken)
+    public async Task<OrderDto> Handle(GetOrderByOrderNumberQuery request, CancellationToken cancellationToken)
     {
-        return new Order
+        var order = (await orderRepository.GetByColumnValueAsync("order_number", request.OrderNumber)).FirstOrDefault();
+
+        if (order is null)
         {
-            OrderNumber = Guid.NewGuid(),
-            OrderStatusId = 1,
-            OrderStatus = new OrderStatus
-            {
-                Id = 1,
-                Name = "Pending"
-            },
-            CreatedAt = DateTime.UtcNow,
-            SupplierId = 1,
-            OrderItems = new List<OrderItem>
-            {
-                new OrderItem
-                {
-                    Id = 1,
-                    OrderId = 1,
-                    MaterialId = 1,
-                    Quantity = 10,
-                    Price = 25.50m,
-                    RawMaterial = new RawMaterial
-                    {
-                        Id = 1,
-                        Name = "Aluminum",
-                        Price = 25.50m
-                    }
-                },
-                new OrderItem
-                {
-                    Id = 2,
-                    OrderId = 1,
-                    MaterialId = 2,
-                    Quantity = 5,
-                    Price = 40.00m,
-                    RawMaterial = new RawMaterial
-                    {
-                        Id = 2,
-                        Name = "Copper",
-                        Price = 40.00m
-                    }
-                }
-            }
-        };
+            throw new Exception($"Order with order number {request.OrderNumber} does not exist");
+        }
+
+        var orderStatus = await orderStatusRepository.GetByIdAsync(order.OrderStatusId);
+        var orderItems = await orderItemRepository.GetByColumnValueAsync("order_id", order.Id);
+        
+        return new OrderDto().MapDbObjects(order, orderStatus, orderItems);
     }
 }

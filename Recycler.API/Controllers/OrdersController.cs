@@ -6,26 +6,20 @@ namespace Recycler.API;
 
 [ApiController]
 [Route("[controller]")]
-public class OrdersController(IMediator mediator) : ControllerBase
+public class OrdersController(IMediator mediator, IGenericRepository<Order> orderRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAllOrders()
     {
-        try
-        {
-            return Ok(new List<Order>());
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+        // restrict with supplier
+        return Ok(new List<Order>());
     }
     
     [HttpGet]
     [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     [Route("{orderNumber}")]
-    public async Task<IActionResult> GetOrderByOrderNumber(string orderNumber)
+    public async Task<IActionResult> GetOrderByOrderNumber(Guid orderNumber)
     {
         // get Supplier's Details compare against order number
         var query = new GetOrderByOrderNumberQuery(orderNumber);
