@@ -1,8 +1,8 @@
 INSERT INTO Role (id, name) VALUES
   (1, 'Recycler'),
   (2, 'Supplier'),
-  (4, 'Logistics'),
-  (5, 'Bank');
+  (3, 'Logistics'),
+  (4, 'Bank');
 
 INSERT INTO RawMaterial (id, name, price) VALUES
   (1, 'Copper', 45.00),
