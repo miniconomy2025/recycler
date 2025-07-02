@@ -31,7 +31,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
         _http.DefaultRequestHeaders.Add("X-API-Key", accountData.api_key);
 
-        var loanRequest = new { amount = 1000000, interest_rate = 0.05 };
+        var loanRequest = new { amount = 1000000 };
         var loanResponse = await _http.PostAsJsonAsync("/loan", loanRequest, cancellationToken);
         if (!loanResponse.IsSuccessStatusCode)
             return new StartSimulationResponse { Status = "error", Message = "Loan request failed" };
