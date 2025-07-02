@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
+builder.Services.AddSingleton<ISimulationClock, SimulationClock>();
 
 builder.Services.AddOpenApi();
 
@@ -15,6 +16,8 @@ builder.Configuration.AddJsonFile("secrets.json",
 
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+builder.Services.AddHttpClient();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
