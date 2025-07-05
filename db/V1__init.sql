@@ -142,6 +142,13 @@ CREATE TABLE PhonePartToRawMaterialRatio (
             ON DELETE CASCADE
 );
 
+CREATE TABLE Machines (
+    id SERIAL PRIMARY KEY,
+    machine_id INTEGER NOT NULL,
+    received_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) NOT NULL 
+);
+
 CREATE INDEX idx_companies_role_id ON Companies (role_id);
 CREATE INDEX idx_phoneinventory_phone_id ON PhoneInventory (phone_id);
 CREATE INDEX idx_materialinventory_material_id ON MaterialInventory (material_id);
