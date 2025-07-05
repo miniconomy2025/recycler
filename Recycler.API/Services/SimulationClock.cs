@@ -1,7 +1,7 @@
 public interface ISimulationClock
 {
     DateTime GetCurrentSimulationTime();
-    void Start();
+    void Start(DateTime? customStartTime = null);
 }
 
 
@@ -10,9 +10,9 @@ public class SimulationClock : ISimulationClock
     private readonly DateTime _simStart = new(2050, 1, 1);
     private DateTime? _realStart;
 
-    public void Start()
+    public void Start(DateTime? customStartTime = null)
     {
-        _realStart = DateTime.UtcNow;
+        _realStart = customStartTime ?? DateTime.UtcNow;
     }
 
     public DateTime GetCurrentSimulationTime()
