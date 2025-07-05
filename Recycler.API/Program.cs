@@ -14,6 +14,17 @@ builder.Configuration.AddJsonFile("secrets.json",
     optional: true,
     reloadOnChange: true);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("InternalApiCors", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
@@ -31,10 +42,15 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/openapi/v1.json", "MiniConomy Recycler API v1");
     });
+    app.Use(async (context, next) =>
+    {
+        Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
+        await next();
+    });
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
