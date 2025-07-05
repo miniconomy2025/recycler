@@ -1,10 +1,12 @@
 using Recycler.API;
+using Recycler.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddSingleton<ISimulationClock, SimulationClock>();
+builder.Services.AddScoped<IRecyclingService, RecyclingService>();
 
 builder.Services.AddOpenApi();
 
