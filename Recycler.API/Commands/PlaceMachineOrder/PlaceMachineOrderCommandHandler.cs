@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration; 
+using Microsoft.Extensions.Configuration;
 
 namespace RecyclerApi.Handlers
 {
@@ -23,13 +23,12 @@ namespace RecyclerApi.Handlers
 
         public async Task<MachineOrderResponseDto> Handle(PlaceMachineOrderCommand request, CancellationToken cancellationToken)
         {
-            var thoHApiBaseUrl = _configuration["http://localhost:3000"] ?? "http://localhost:3000"; 
+            var thoHApiBaseUrl = _configuration[thoHApiUrl] ?? "http://localhost:3000";
             _httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
 
             var machineOrderRequest = new MachineOrderRequestDto
             {
-                MachineId = request.MachineId,
-                Quantity = request.Quantity,
+                MachineId = request.MachineId
             };
 
             var jsonContent = JsonSerializer.Serialize(machineOrderRequest);
@@ -47,7 +46,6 @@ namespace RecyclerApi.Handlers
                         var responseBody = await response.Content.ReadAsStringAsync();
                         if (!string.IsNullOrEmpty(responseBody))
                         {
-
                             try
                             {
                                 var thoHResponse = JsonSerializer.Deserialize<MachineOrderResponseDto>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -58,6 +56,7 @@ namespace RecyclerApi.Handlers
                             }
                             catch (JsonException)
                             {
+                             
                             }
                         }
                     }
@@ -66,13 +65,11 @@ namespace RecyclerApi.Handlers
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                   
                     throw new HttpRequestException($"Failed to place machine order. Status: {response.StatusCode}, Content: {errorContent}");
                 }
             }
             catch (HttpRequestException ex)
             {
-           
                 throw new ApplicationException($"Error communicating with ThoH API: {ex.Message}", ex);
             }
         }
