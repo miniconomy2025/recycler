@@ -19,7 +19,11 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
-        _clock.Start();
+        DateTime? realStart = request.StartTime.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(request.StartTime.Value).UtcDateTime
+            : null;
+
+        _clock.Start(realStart);
 
         var accountResponse = await _http.PostAsJsonAsync("/account", new { }, cancellationToken);
         if (!accountResponse.IsSuccessStatusCode)
@@ -38,12 +42,12 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
         var loanData = await loanResponse.Content.ReadFromJsonAsync<LoanResponse>(cancellationToken: cancellationToken);
 
-        var currentSimTime = _clock.GetCurrentSimulationTime();
+        var simTime = _clock.GetCurrentSimulationTime();
 
         return new StartSimulationResponse
         {
             Status = "started",
-            Message = $"Simulation initialized with loan #{loanData?.loan_number ?? "unknown"} at sim time {currentSimTime:yyyy-MM-dd HH:mm:ss}"
+            Message = $"Simulation initialized with loan #{loanData?.loan_number ?? "unknown"} at sim time {simTime:yyyy-MM-dd HH:mm:ss}"
         };
     }
 

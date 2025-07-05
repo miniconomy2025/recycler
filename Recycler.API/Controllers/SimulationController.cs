@@ -12,9 +12,9 @@ public class SimulationController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(StartSimulationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Start()
+    public async Task<IActionResult> Start([FromBody] StartSimulationCommand command)
     {
-        var result = await mediator.Send(new StartSimulationCommand());
+        var result = await mediator.Send(command);
         return Ok(result);
     }
 }
