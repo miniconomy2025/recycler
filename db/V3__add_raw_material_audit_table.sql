@@ -1,11 +1,10 @@
 CREATE TABLE IF NOT EXISTS RawMaterialAuditLogs (
     id SERIAL PRIMARY KEY,
     audit_action_id INTEGER NOT NULL,
-    raw_material_id INTEGER NOT NULL,
+    name VARCHAR(8) NOT NULL,
     price DECIMAL(10,2),
     last_modified_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_raw_material_audit_audit_action_id FOREIGN KEY (audit_action_id) REFERENCES AuditActions(id) ON DELETE RESTRICT,
-    CONSTRAINT fk_raw_material_audit_raw_material_id FOREIGN KEY (raw_material_id) REFERENCES RawMaterial(id) ON DELETE RESTRICT
+    CONSTRAINT fk_raw_material_audit_audit_action_id FOREIGN KEY (audit_action_id) REFERENCES AuditActions(id) ON DELETE RESTRICT
 );
 
 
@@ -14,12 +13,12 @@ RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO RawMaterialAuditLogs (
         audit_action_id,
-        raw_material_id,
+        name,
         price,
         last_modified_at
     ) VALUES (
         (SELECT id FROM AuditActions WHERE action_name = 'INSERT'),
-        NEW.id,
+        NEW.name,
         NEW.price,
         NOW()
      );
@@ -40,12 +39,12 @@ RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO RawMaterialAuditLogs (
         audit_action_id,
-        raw_material_id,
+        name,
         price,
         last_modified_at
     ) VALUES (
         (SELECT id FROM AuditActions WHERE action_name = 'UPDATE'),
-        NEW.id,
+        NEW.name,
         NEW.price,
         NOW()
     );

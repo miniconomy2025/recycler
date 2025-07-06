@@ -19,7 +19,6 @@ CREATE TABLE Role (
 
 CREATE TABLE Companies (
     id SERIAL CONSTRAINT pk_companies PRIMARY KEY,
-    company_number UUID UNIQUE NOT NULL,
     role_id INTEGER NOT NULL,
     name VARCHAR(55) NOT NULL,
     key_id INTEGER,
@@ -46,7 +45,7 @@ CREATE TABLE Phone (
 
 CREATE TABLE RawMaterial (
     id SERIAL CONSTRAINT pk_raw_material PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(8) UNIQUE NOT NULL,
     price DECIMAL(10,2) NOT NULL
 );
 
