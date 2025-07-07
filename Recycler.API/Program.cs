@@ -1,5 +1,7 @@
+using System.Globalization;
 using Recycler.API;
 using Recycler.API.Services;
+CultureInfo.CurrentCulture = new CultureInfo("en-ZA") { NumberFormat = { NumberDecimalSeparator = "." } };
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,10 +31,13 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IRawMaterialService, RawMaterialService>();
 
 builder.Services.AddHttpClient();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+await new Startup(builder).ConfigureApplication();
 
 var app = builder.Build();
 
