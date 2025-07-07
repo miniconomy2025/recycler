@@ -46,7 +46,7 @@ CREATE TABLE Phone (
 CREATE TABLE RawMaterial (
     id SERIAL CONSTRAINT pk_raw_material PRIMARY KEY,
     name VARCHAR(8) UNIQUE NOT NULL,
-    price DECIMAL(10,2) NOT NULL
+    price_per_kg DECIMAL(10,2) NOT NULL
 );
 
 CREATE TABLE PhoneInventory (
@@ -100,7 +100,7 @@ CREATE TABLE OrderItems (
     order_id INTEGER NOT NULL,
     material_id INTEGER NOT NULL,
     quantity_in_kg INTEGER NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
+    price_per_kg DECIMAL(10,2) NOT NULL,
     CONSTRAINT fk_order
         FOREIGN KEY (order_id)
         REFERENCES Orders(id)

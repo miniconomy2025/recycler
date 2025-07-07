@@ -15,14 +15,14 @@ public class RawMaterialService(IGenericRepository<RawMaterial> repository) : IR
                 await repository.CreateAsync(new RawMaterial()
                 {
                     Name = updateRawMaterial.Name,
-                    Price = updateRawMaterial.Price
+                    PricePerKg = updateRawMaterial.PricePerKg
                 });
             }
-            else if (rawMaterial.Price != updateRawMaterial.Price)
+            else if (rawMaterial.PricePerKg != updateRawMaterial.PricePerKg)
             {
-                rawMaterial.Price = updateRawMaterial.Price;
+                rawMaterial.PricePerKg = updateRawMaterial.PricePerKg;
                 
-                await repository.UpdateAsync(rawMaterial, new List<string>() {"Price"});
+                await repository.UpdateAsync(rawMaterial, new List<string>() {"PricePerKg"});
             }
         }
     }

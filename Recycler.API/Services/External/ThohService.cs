@@ -73,7 +73,7 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
             updateRawMaterials.Add(new RawMaterial()
             {
                 Name = thohRawMaterial.RawMaterialName,
-                Price = thohRawMaterial.PricePerKg * discountMultiplier
+                PricePerKg = thohRawMaterial.PricePerKg * discountMultiplier
             });
         }
         

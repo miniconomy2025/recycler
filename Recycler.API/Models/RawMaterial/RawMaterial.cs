@@ -9,5 +9,5 @@ public class RawMaterial
     
     public string Name { get; set; }
     
-    public decimal Price { get; set; }
+    public decimal PricePerKg { get; set; }
 }

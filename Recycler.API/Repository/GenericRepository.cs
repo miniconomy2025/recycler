@@ -91,20 +91,20 @@ public class GenericRepository<T>: IGenericRepository<T> where T : class
         return await connection.ExecuteScalarAsync<int>(sql, entity);
     }
 
-    public async Task<bool> UpdateAsync(T entity, IEnumerable<string> columnNamesToUpdate)
+    public async Task<bool> UpdateAsync(T entity, IEnumerable<string> propertyNamesToUpdate)
     {
         await using NpgsqlConnection connection = GetConnection();
         
 
-        string setClauses = string.Join(", ", columnNamesToUpdate.Select(columnName =>
+        string setClauses = string.Join(", ", propertyNamesToUpdate.Select(propertyName =>
         {
-            PropertyInfo columnPropertyInfo = typeof(T).GetProperty(columnName) ?? 
-                throw new ArgumentException($"Unable to update entity  '{typeof(T).Name}' because it doesn't have a property named '{columnName}'");
+            PropertyInfo propertyInfo = typeof(T).GetProperty(propertyName) ?? 
+                throw new ArgumentException($"Unable to update entity  '{typeof(T).Name}' because it doesn't have a property named '{propertyName}'");
 
-            object columnValue = columnPropertyInfo.GetValue(entity) ?? 
-                throw new ArgumentException($"Unable to update entity '{typeof(T).Name}' because '{columnName}' value is null");
+            object columnValue = propertyInfo.GetValue(entity) ?? 
+                throw new ArgumentException($"Unable to update entity '{typeof(T).Name}' because '{propertyName}' value is null");
 
-            return $"{columnName} = @{columnValue}";
+            return $"{GetColumnNameFromProperty(propertyName)} = @{columnValue}";
         }));
             
 

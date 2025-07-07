@@ -4,7 +4,7 @@ INSERT INTO Role (name) VALUES
   ('Bank');
 
 
-INSERT INTO RawMaterial (name, price) VALUES
+INSERT INTO RawMaterial (name, price_per_kg) VALUES
   ('Copper', 45.00),
   ('Silicon', 55.00),
   ('Sand', 10.00),
