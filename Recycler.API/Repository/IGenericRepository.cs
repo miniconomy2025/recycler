@@ -8,5 +8,5 @@ public interface IGenericRepository<T> where T : class
     Task<T?> GetByIdAsync(int id);
     Task<IEnumerable<T>> GetByColumnValueAsync(string columnName, object columnValue);
     Task<int> CreateAsync(T entity);
-    Task<bool> UpdateAsync(T entity);
+    Task<bool> UpdateAsync(T entity, IEnumerable<string> propertyNamesToUpdate);
 }
