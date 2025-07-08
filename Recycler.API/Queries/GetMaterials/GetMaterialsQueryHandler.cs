@@ -2,14 +2,28 @@ using MediatR;
 
 namespace Recycler.API.Queries.GetMaterials;
 
-public class GetMaterialsQueryHandler : IRequestHandler<GetMaterialsQuery, List<RawMaterialDto>>
+public class GetMaterialsQueryHandler(
+    IGenericRepository<RawMaterial> rawMaterialRepository,
+    IGenericRepository<MaterialInventory> materialInventoryRepository) : IRequestHandler<GetMaterialsQuery, List<RawMaterialDto>>
 {
     public async Task<List<RawMaterialDto>> Handle(GetMaterialsQuery request, CancellationToken cancellationToken)
     {
-        return new List<RawMaterialDto>
+        var rawMaterials = await rawMaterialRepository.GetAllAsync();
+        
+        var rawMaterialDtos = new List<RawMaterialDto>();
+
+        foreach (var rawMaterial in rawMaterials)
         {
-            new() { Name = "Aluminum", AvailableQuantityInKg = 120.5f, Price = 25.5m },
-            new() { Name = "Copper", AvailableQuantityInKg = 50.0f, Price = 40.0m }
-        };
+            var materialInventory = await materialInventoryRepository.GetByIdAsync(rawMaterial.Id);
+            
+            rawMaterialDtos.Add(new RawMaterialDto()
+            {
+                Name = rawMaterial.Name,
+                AvailableQuantityInKg = materialInventory?.AvailableQuantityInKg ?? 0,
+                PricePerKg = rawMaterial.PricePerKg
+            });
+        }
+
+        return rawMaterialDtos;
     }
 }

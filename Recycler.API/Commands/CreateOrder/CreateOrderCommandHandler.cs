@@ -30,7 +30,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                     {
                         Id = 1,
                         Name = "Aluminum",
-                        Price = 25.50m
+                        PricePerKg = 25.50m
                     }
                 },
                 new OrderItem
@@ -44,7 +44,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                     {
                         Id = 2,
                         Name = "Copper",
-                        Price = 40.00m
+                        PricePerKg = 40.00m
                     }
                 }
             }
