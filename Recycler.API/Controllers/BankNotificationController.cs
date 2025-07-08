@@ -56,7 +56,7 @@ public class BankNotificationController : ControllerBase
             }
 
             order.OrderStatusId = approvedStatus.Id;
-            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.UpdateAsync(order,  ["OrderStatusId"]);
 
             _logger.LogInformation("Order {orderId} marked as Approved due to payment", order.Id);
             return Ok();

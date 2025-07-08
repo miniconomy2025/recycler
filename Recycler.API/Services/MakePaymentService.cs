@@ -1,21 +1,23 @@
-namespace Recycler.API.Services;
-
 public class MakePaymentService
 {
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _config;
 
     public MakePaymentService(IHttpClientFactory httpClientFactory, IConfiguration config)
     {
-        _httpClient = httpClientFactory.CreateClient();
+        _httpClientFactory = httpClientFactory;
         _config = config;
-
-        var bankBaseUrl = _config["commercialBank"] ?? "http://localhost:8085";
-        _httpClient.BaseAddress = new Uri(bankBaseUrl);
     }
 
-    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, string toBankName, decimal amount, string description, CancellationToken cancellationToken = default)
+    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, string toBankName, decimal amount, string description, string apiKey, CancellationToken cancellationToken = default)
     {
+        var httpClient = _httpClientFactory.CreateClient();
+        var bankBaseUrl = _config["commercialBank"] ?? "http://localhost:8085";
+        httpClient.BaseAddress = new Uri(bankBaseUrl);
+
+        httpClient.DefaultRequestHeaders.Clear();
+        httpClient.DefaultRequestHeaders.Add("X-API-Key", apiKey);
+
         var requestBody = new
         {
             to_account_number = toAccountNumber,
@@ -24,7 +26,7 @@ public class MakePaymentService
             description
         };
 
-        var response = await _httpClient.PostAsJsonAsync("/transaction", requestBody, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync("/transaction", requestBody, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);

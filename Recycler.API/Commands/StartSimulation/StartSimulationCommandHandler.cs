@@ -86,10 +86,12 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         };
 
         string? orderNumber = null;
+        string? thoHAccount = null;
         try
         {
             var orderResult = await _mediator.Send(orderCommand, cancellationToken);
             orderNumber = orderResult.OrderId.ToString();
+            thoHAccount = orderResult.BankAccount;
             Console.WriteLine($"Ordered recycling machine: {orderResult.Message}");
         }
         catch (Exception ex)
@@ -97,7 +99,6 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
             Console.WriteLine($"Failed to order recycling machine: {ex.Message}");
         }
 
-        var thoHAccount = _configuration["thoHAccountNumber"];
         if (string.IsNullOrEmpty(thoHAccount))
         {
             return new StartSimulationResponse { Status = "error", Message = "Missing THoH account number config" };
@@ -112,6 +113,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
                     toBankName: "commercial-bank",
                     amount: totalCost,
                     description: $"Order #{orderNumber}",
+                    apiKey: accountData.api_key,
                     cancellationToken);
 
                 Console.WriteLine($"Payment made: Tx#{payment.transaction_number}");

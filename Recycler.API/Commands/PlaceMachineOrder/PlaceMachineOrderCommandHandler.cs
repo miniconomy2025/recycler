@@ -37,27 +37,24 @@ namespace RecyclerApi.Handlers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseMessage = "Machine order placed successfully.";
-                    if (response.Content != null)
+                    var responseBody = await response.Content.ReadAsStringAsync();
+
+                    var thoHResponse = JsonSerializer.Deserialize<MachineOrderResponseDto>(
+                        responseBody,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    );
+
+                    if (thoHResponse != null)
                     {
-                        var responseBody = await response.Content.ReadAsStringAsync();
-                        if (!string.IsNullOrEmpty(responseBody))
+                        if (string.IsNullOrEmpty(thoHResponse.Message))
                         {
-                            try
-                            {
-                                var thoHResponse = JsonSerializer.Deserialize<MachineOrderResponseDto>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                                if (thoHResponse != null && !string.IsNullOrEmpty(thoHResponse.Message))
-                                {
-                                    responseMessage = thoHResponse.Message;
-                                }
-                            }
-                            catch (JsonException)
-                            {
-                             
-                            }
+                            thoHResponse.Message = "Machine order placed successfully.";
                         }
+
+                        return thoHResponse;
                     }
-                    return new MachineOrderResponseDto { Message = responseMessage };
+
+                    throw new ApplicationException("Machine order succeeded but response was empty or invalid.");
                 }
                 else
                 {
