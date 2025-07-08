@@ -3,24 +3,26 @@ using RecyclerApi.Commands;
 using RecyclerApi.Models;
 using System.Text;
 using System.Text.Json;
+using Recycler.API.Utils;
 
 namespace RecyclerApi.Handlers
 {
     public class PlaceMachineOrderCommandHandler : IRequestHandler<PlaceMachineOrderCommand, MachineOrderResponseDto>
     {
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
 
-        public PlaceMachineOrderCommandHandler(HttpClient httpClient, IConfiguration configuration)
+        public PlaceMachineOrderCommandHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _configuration = configuration;
         }
 
         public async Task<MachineOrderResponseDto> Handle(PlaceMachineOrderCommand request, CancellationToken cancellationToken)
         {
             var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "http://localhost:3000";
-            _httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
 
             var machineOrderRequest = new MachineOrderRequestDto
             {
@@ -33,7 +35,9 @@ namespace RecyclerApi.Handlers
 
             try
             {
-                var response = await _httpClient.PostAsync("/simulation/purchase-machine", httpContent, cancellationToken);
+                var response = await RetryHelper.RetryAsync(
+                    () => httpClient.PostAsync("/simulation/purchase-machine", httpContent, cancellationToken),
+                    operationName: "Place machine order");
 
                 if (response.IsSuccessStatusCode)
                 {

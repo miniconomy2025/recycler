@@ -1,6 +1,6 @@
 using MediatR;
 using RecyclerApi.Commands;
-using Recycler.API.Services;
+using Recycler.API.Utils;
 
 namespace Recycler.API.Commands.StartSimulation;
 
@@ -37,7 +37,10 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
         _clock.Start(realStart);
 
-        var accountResponse = await _http.PostAsJsonAsync("/account", new { }, cancellationToken);
+        var accountResponse = await RetryHelper.RetryAsync(
+            () => _http.PostAsJsonAsync("/account", new { }, cancellationToken),
+            maxAttempts: 20,
+            operationName: "Create bank account");
         if (!accountResponse.IsSuccessStatusCode)
             return new StartSimulationResponse { Status = "error", Message = "Failed to create bank account" };
 
@@ -48,10 +51,13 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         _http.DefaultRequestHeaders.Add("X-API-Key", accountData.api_key);
 
         var notificationUrl = _configuration["bankNotificationUrl"] ?? "http://localhost:7121/api/banknotification";
-        var notifyResponse = await _http.PostAsJsonAsync("/account/me/notify", new
-        {
-            notification_url = notificationUrl
-        }, cancellationToken);
+        var notifyResponse = await RetryHelper.RetryAsync(
+            () => _http.PostAsJsonAsync("/account/me/notify", new
+            {
+                notification_url = notificationUrl
+            }, cancellationToken),
+            operationName: "Register bank notification");
+
 
         if (!notifyResponse.IsSuccessStatusCode)
         {
@@ -60,7 +66,9 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         }
 
         var thoHUrl = _configuration["thoHApiUrl"] ?? "http://localhost:8084";
-        var machinesResponse = await _http.GetAsync($"{thoHUrl}/simulation/machines", cancellationToken);
+        var machinesResponse = await RetryHelper.RetryAsync(
+            () => _http.GetAsync($"{thoHUrl}/simulation/machines", cancellationToken),
+            operationName: "Fetch machines from THoH");
         if (!machinesResponse.IsSuccessStatusCode)
             return new StartSimulationResponse { Status = "error", Message = "Could not retrieve machine list" };
 
@@ -73,7 +81,9 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
             return new StartSimulationResponse { Status = "error", Message = "Recycling machine not found" };
 
         var totalCost = recyclingMachine.price * 2;
-        var loanResponse = await _http.PostAsJsonAsync("/loan", new { amount = totalCost + 5000 }, cancellationToken);
+        var loanResponse = await RetryHelper.RetryAsync(
+            () => _http.PostAsJsonAsync("/loan", new { amount = totalCost + 5000 }, cancellationToken),
+            operationName: "Request loan");
         if (!loanResponse.IsSuccessStatusCode)
             return new StartSimulationResponse { Status = "error", Message = "Loan request failed" };
 
@@ -89,7 +99,9 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         string? thoHAccount = null;
         try
         {
-            var orderResult = await _mediator.Send(orderCommand, cancellationToken);
+            var orderResult = await RetryHelper.RetryAsync(
+                () => _mediator.Send(orderCommand, cancellationToken),
+                operationName: "Place machine order");
             orderNumber = orderResult.OrderId.ToString();
             thoHAccount = orderResult.BankAccount;
             Console.WriteLine($"Ordered recycling machine: {orderResult.Message}");
@@ -108,14 +120,15 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         {
             try
             {
-                var payment = await _paymentService.SendPaymentAsync(
-                    toAccountNumber: thoHAccount,
-                    toBankName: "commercial-bank",
-                    amount: totalCost,
-                    description: $"Order #{orderNumber}",
-                    apiKey: accountData.api_key,
-                    cancellationToken);
-
+                var payment = await RetryHelper.RetryAsync(
+                    () => _paymentService.SendPaymentAsync(
+                        toAccountNumber: thoHAccount,
+                        toBankName: "commercial-bank",
+                        amount: totalCost,
+                        description: $"Order #{orderNumber}",
+                        apiKey: accountData.api_key,
+                        cancellationToken),
+                    operationName: "Send machine payment");
                 Console.WriteLine($"Payment made: Tx#{payment.transaction_number}");
             }
             catch (Exception ex)

@@ -1,3 +1,5 @@
+using Recycler.API.Utils;
+
 public class MakePaymentService
 {
     private readonly IHttpClientFactory _httpClientFactory;
@@ -26,7 +28,9 @@ public class MakePaymentService
             description
         };
 
-        var response = await httpClient.PostAsJsonAsync("/transaction", requestBody, cancellationToken);
+        var response = await RetryHelper.RetryAsync(
+            () => httpClient.PostAsJsonAsync("/transaction", requestBody, cancellationToken),
+            operationName: "Send payment");
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);

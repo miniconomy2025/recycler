@@ -4,16 +4,18 @@ namespace Recycler.API;
 
 public class Startup(WebApplicationBuilder builder)
 {
-    public async Task ConfigureApplication()
+    public void ConfigureApplication()
     {
-        await SetupExternalApiClients();
+        SetupExternalApiClients();
     }
 
-    private async Task SetupExternalApiClients()
+    private void SetupExternalApiClients()
     {
+        var thoHUrl = builder.Configuration["thoHApiUrl"] ?? "http://localhost:8084";
+
         builder.Services.AddHttpClient<ThohService>(client =>
         {
-            client.BaseAddress = new Uri("http://localhost:8084");
+            client.BaseAddress = new Uri(thoHUrl);
         });
 
         builder.Services.AddScoped<ThohService>();
