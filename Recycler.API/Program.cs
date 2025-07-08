@@ -31,6 +31,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<MakePaymentService>();
 builder.Services.AddScoped<IRawMaterialService, RawMaterialService>();
 
 builder.Services.AddHttpClient();
