@@ -1,12 +1,8 @@
 using MediatR;
 using RecyclerApi.Commands;
 using RecyclerApi.Models;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 
 namespace RecyclerApi.Handlers
 {
@@ -23,12 +19,13 @@ namespace RecyclerApi.Handlers
 
         public async Task<MachineOrderResponseDto> Handle(PlaceMachineOrderCommand request, CancellationToken cancellationToken)
         {
-            var thoHApiBaseUrl = _configuration[thoHApiUrl] ?? "http://localhost:3000";
+            var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "http://localhost:3000";
             _httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
 
             var machineOrderRequest = new MachineOrderRequestDto
             {
-                MachineId = request.MachineId
+                machineName = request.machineName,
+                quantity = request.quantity,
             };
 
             var jsonContent = JsonSerializer.Serialize(machineOrderRequest);
@@ -36,7 +33,7 @@ namespace RecyclerApi.Handlers
 
             try
             {
-                var response = await _httpClient.PostAsync("/machines/orders", httpContent, cancellationToken);
+                var response = await _httpClient.PostAsync("/simulation/purchase-machine", httpContent, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
