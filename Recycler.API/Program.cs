@@ -38,7 +38,7 @@ builder.Services.AddHttpClient();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-await new Startup(builder).ConfigureApplication();
+new Startup(builder).ConfigureApplication();
 
 var app = builder.Build();
 
