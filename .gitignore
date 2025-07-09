@@ -2,3 +2,6 @@
 /mock-thoH
 /mock-bulk-logistics
 /backend
+
+**/*.vscode
+**/*.pem
