@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS MaterialInventoryAuditLogs (
     audit_action_id INTEGER NOT NULL,
     material_id INTEGER NOT NULL,
     available_quantity_in_kg INTEGER,
+    reserved_quantity_in_kg INTEGER,
     last_modified_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_material_inventory_audit_action_id FOREIGN KEY (audit_action_id) REFERENCES AuditActions(id) ON DELETE RESTRICT,
     CONSTRAINT fk_material_inventory_audit_material_id FOREIGN KEY (material_id) REFERENCES RawMaterial(id) ON DELETE RESTRICT
@@ -16,11 +17,13 @@ BEGIN
         audit_action_id,
         material_id,
         available_quantity_in_kg,
+        reserved_quantity_in_kg,
         last_modified_at
     ) VALUES (
         (SELECT id FROM AuditActions WHERE action_name = 'INSERT'),
         NEW.material_id,
         NEW.available_quantity_in_kg,
+        NEW.reserved_quantity_in_kg,
         NOW()
     );
 
@@ -42,11 +45,13 @@ BEGIN
         audit_action_id,
         material_id,
         available_quantity_in_kg,
+        reserved_quantity_in_kg,
         last_modified_at
     ) VALUES (
         (SELECT id FROM AuditActions WHERE action_name = 'UPDATE'),
         NEW.material_id,
         NEW.available_quantity_in_kg,
+        NEW.reserved_quantity_in_kg,
         NOW()
     );
 

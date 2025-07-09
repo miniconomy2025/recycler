@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS OrdersAuditLogs (
     order_status_id INTEGER,
     created_at TIMESTAMP,
     company_id INTEGER,
+    order_expires_at TIMESTAMP NOT NULL,
     last_modified_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_orders_audit_action_id FOREIGN KEY (audit_action_id) REFERENCES AuditActions(id) ON DELETE RESTRICT,
     CONSTRAINT fk_orders_audit_order_status_id FOREIGN KEY (order_status_id) REFERENCES OrderStatus(id) ON DELETE RESTRICT,
@@ -21,6 +22,7 @@ BEGIN
         order_status_id,
         created_at,
         company_id,
+        order_expires_at,
         last_modified_at
     ) VALUES (
         (SELECT id FROM AuditActions WHERE action_name = 'INSERT'),
@@ -28,6 +30,7 @@ BEGIN
         NEW.order_status_id,
         NEW.created_at,
         NEW.company_id,
+        NEW.order_expires_at,
         NOW()
     );
     RETURN NEW;
@@ -50,6 +53,7 @@ BEGIN
         order_status_id,
         created_at,
         company_id,
+        order_expires_at,
         last_modified_at
     ) VALUES (
         (SELECT id FROM AuditActions WHERE action_name = 'UPDATE'),
@@ -57,6 +61,7 @@ BEGIN
         NEW.order_status_id,
         NEW.created_at,
         NEW.company_id,
+        NEW.order_expires_at,
         NOW()
     );
     RETURN NEW;
