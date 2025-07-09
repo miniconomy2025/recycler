@@ -32,13 +32,14 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
+builder.Services.AddScoped<MakePaymentService>();
 builder.Services.AddScoped<IRawMaterialService, RawMaterialService>();
 
 builder.Services.AddHttpClient();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-await new Startup(builder).ConfigureApplication();
+new Startup(builder).ConfigureApplication();
 
 var app = builder.Build();
 

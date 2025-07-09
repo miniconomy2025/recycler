@@ -5,7 +5,7 @@ namespace RecyclerApi.Commands
 {
     public class PlaceMachineOrderCommand : IRequest<MachineOrderResponseDto>
     {
-        public int MachineId { get; set; }
-        public int Quantity { get; set; }
+        public string machineName { get; set; }
+        public int quantity { get; set; }
     }
 }

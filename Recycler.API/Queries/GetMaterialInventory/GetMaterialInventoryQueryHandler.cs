@@ -1,37 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Dapper;
 using MediatR;
-using Npgsql;
+using Recycler.API.Models.MaterialInventory;
 
-namespace Recycler.API.Queries.GetMaterialInventory
+namespace Recycler.API.Queries.GetMaterialInventory;
+
+public class GetMaterialInventoryQueryHandler(
+    IGenericRepository<RawMaterial> rawMaterialRepository,
+    IGenericRepository<MaterialInventory> materialInventoryRepository) : IRequestHandler<GetMaterialInventoryQuery, List<MaterialInventoryDto>>
 {
-    public class GetMaterialInventoryQueryHandler : IRequestHandler<GetMaterialInventoryQuery, Dictionary<string, int>>
+    public async Task<List<MaterialInventoryDto>> Handle(GetMaterialInventoryQuery request, CancellationToken cancellationToken)
     {
-        private readonly IConfiguration _configuration;
+        var rawMaterials = await rawMaterialRepository.GetAllAsync();
 
-        public GetMaterialInventoryQueryHandler(IConfiguration configuration)
+        var materialInventoryDtos = new List<MaterialInventoryDto>();
+
+        foreach (var rawMaterial in rawMaterials)
         {
-            _configuration = configuration;
+            var materialInventory = await materialInventoryRepository.GetByIdAsync(rawMaterial.Id);
+
+            materialInventoryDtos.Add(new MaterialInventoryDto()
+            {
+                MaterialName = rawMaterial.Name,
+                AvailableQuantityInKg = materialInventory?.AvailableQuantityInKg ?? 0
+            });
         }
 
-        public async Task<Dictionary<string, int>> Handle(GetMaterialInventoryQuery request, CancellationToken cancellationToken)
-        {
-            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            
-            var sql = @"
-                SELECT rm.name as MaterialName, COALESCE(mi.available_quantity_in_kg, 0) as Quantity
-                FROM rawmaterial rm
-                LEFT JOIN materialinventory mi ON rm.id = mi.material_id";
-
-            var results = await connection.QueryAsync<dynamic>(sql);
-            
-            return results.ToDictionary(
-                r => (string)r.materialname, 
-                r => (int)r.quantity
-            );
-        }
+        return materialInventoryDtos;
     }
 }
