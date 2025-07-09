@@ -13,9 +13,9 @@ VALUES (1, 100000),
        (5, 60000);
 
 -- Orders
-INSERT INTO Orders (order_number, order_status_id, created_At, company_id)
-VALUES ('6d71f7b0-a18d-4c6d-83d0-d417be41e51c', 1, '2025-06-29 20:00:43', 1),
-       ('d105b904-e58f-4baa-b4c3-f1b2aef0a0e1', 2, '2025-06-29 20:00:43', 2);
+INSERT INTO Orders (order_number, order_status_id, created_at, company_id, order_expires_at)
+VALUES ('6d71f7b0-a18d-4c6d-83d0-d417be41e51c', 1, '2025-06-29 20:00:43', 1, '2025-06-29 20:05:43'),
+       ('d105b904-e58f-4baa-b4c3-f1b2aef0a0e1', 2, '2025-06-29 20:00:43', 2, '2025-06-29 20:10:43');
 
 -- Order Items
 INSERT INTO OrderItems (order_id, material_id, quantity_in_kg, price_per_kg)

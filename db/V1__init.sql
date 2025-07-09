@@ -68,6 +68,7 @@ CREATE TABLE MaterialInventory (
     id SERIAL CONSTRAINT pk_material_inventory PRIMARY KEY,
     material_id INTEGER UNIQUE NOT NULL,
     available_quantity_in_kg INTEGER NOT NULL DEFAULT 0,
+    reserved_quantity_in_kg INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT fk_material
         FOREIGN KEY (material_id)
         REFERENCES RawMaterial(id)
@@ -83,8 +84,9 @@ CREATE TABLE Orders (
     id SERIAL CONSTRAINT pk_order PRIMARY KEY,
     order_number UUID UNIQUE NOT NULL,
     order_status_id INTEGER NOT NULL,
-    created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     company_id INTEGER NOT NULL,
+    order_expires_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_order_status
         FOREIGN KEY (order_status_id)
         REFERENCES OrderStatus(id)
