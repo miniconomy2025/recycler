@@ -10,10 +10,18 @@ public class OrderItem
     public int OrderId { get; set; }
 
     public int MaterialId { get; set; }
-    public RawMaterial RawMaterial { get; set; }
 
     public int Quantity { get; set; }
     
     public decimal Price { get; set; }
+    
+    public OrderItem MapDbObjects(OrderItemDto orderItemDto)
+    {
+        MaterialId = orderItemDto.RawMaterial.Id;
+        Quantity = orderItemDto.Quantity;
+        Price = orderItemDto.Price;
+
+        return this;
+    }
 }
 

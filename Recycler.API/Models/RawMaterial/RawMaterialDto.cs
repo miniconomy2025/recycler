@@ -1,4 +1,4 @@
-namespace Recycler.API.Queries.GetMaterials;
+namespace Recycler.API;
 
 public class RawMaterialDto
 {
