@@ -5,3 +5,5 @@
 
 **/*.vscode
 **/*.pem
+certs/
+secrets.json
