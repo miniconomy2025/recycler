@@ -2,6 +2,7 @@
 /mock-thoH
 /mock-bulk-logistics
 /backend
+/mock-consumer-logistics
 
 **/*.vscode
 **/*.pem
