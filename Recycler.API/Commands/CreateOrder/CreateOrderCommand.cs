@@ -1,9 +1,10 @@
 using MediatR;
+using Recycler.API.Models;
 
 namespace Recycler.API;
 
-public class CreateOrderCommand : IRequest<Order>
+public class CreateOrderCommand : IRequest<GenericResponse<OrderDto>>
 {
-    public required int SupplierId { get; set; }
-    public required CreateOrderItemDto[] OrderItems { get; set; }
+    public required string CompanyName { get; set; }
+    public required IEnumerable<CreateOrderItemDto> OrderItems { get; set; }
 }

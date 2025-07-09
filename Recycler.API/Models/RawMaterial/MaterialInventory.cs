@@ -10,5 +10,7 @@ public class MaterialInventory
     public int MaterialId { get; set; }
     
     public double AvailableQuantityInKg { get; set; }
+    
+    public double ReservedQuantityInKg { get; set; }
 }
 

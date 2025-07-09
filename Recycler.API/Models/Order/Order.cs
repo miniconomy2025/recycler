@@ -11,12 +11,10 @@ public class Order
 
     public int OrderStatusId { get; set; }
     
-    public OrderStatus OrderStatus { get; set; }
-
     public DateTime CreatedAt { get; set; }
 
-    public int SupplierId { get; set; }
-
-    public ICollection<OrderItem> OrderItems { get; set; }
+    public int CompanyId { get; set; }
+    
+    public DateTime OrderExpiresAt { get; set; }
 }
 
