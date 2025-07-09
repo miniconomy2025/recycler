@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Recycler.API.Models;
 
 namespace Recycler.API;
 
@@ -9,14 +10,17 @@ namespace Recycler.API;
 public class OrdersController(IMediator mediator, IGenericRepository<Order> orderRepository) : ControllerBase
 {
     [HttpGet]
-    public IActionResult GetAllOrders()
+    [ProducesResponseType(typeof(GenericResponse<OrderDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetOrderById([FromQuery] int id)
     {
-        // restrict with supplier
-        return Ok(new List<Order>());
+        // get Supplier's Details compare against order number
+        var query = new GetOrderByIdQuery(id);
+        return Ok(await mediator.Send(query));
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GenericResponse<OrderDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     [Route("{orderNumber}")]
     public async Task<IActionResult> GetOrderByOrderNumber(Guid orderNumber)
@@ -28,7 +32,7 @@ public class OrdersController(IMediator mediator, IGenericRepository<Order> orde
     
     
     [HttpPost]
-    [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GenericResponse<OrderDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
     {

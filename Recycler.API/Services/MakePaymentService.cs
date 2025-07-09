@@ -11,14 +11,13 @@ public class MakePaymentService
         _config = config;
     }
 
-    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, string toBankName, decimal amount, string description, string apiKey, CancellationToken cancellationToken = default)
+    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, string toBankName, decimal amount, string description, CancellationToken cancellationToken = default)
     {
         var httpClient = _httpClientFactory.CreateClient();
         var bankBaseUrl = _config["commercialBank"] ?? "";
         httpClient.BaseAddress = new Uri(bankBaseUrl);
 
         httpClient.DefaultRequestHeaders.Clear();
-        httpClient.DefaultRequestHeaders.Add("X-API-Key", apiKey);
 
         var requestBody = new
         {

@@ -1,4 +1,5 @@
 using MediatR;
+using Recycler.API.Services;
 using RecyclerApi.Commands;
 using Recycler.API.Utils;
 
@@ -11,19 +12,22 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
     private readonly IMediator _mediator;
     private readonly IConfiguration _configuration;
     private readonly MakePaymentService _paymentService;
+    private readonly ICommercialBankService _commercialBankService;
 
     public StartSimulationCommandHandler(
         IHttpClientFactory httpFactory,
         ISimulationClock clock,
         IMediator mediator,
         IConfiguration configuration,
-        MakePaymentService paymentService)
+        MakePaymentService paymentService, 
+        ICommercialBankService commercialBankService)
     {
         _http = httpFactory.CreateClient();
         _clock = clock;
         _mediator = mediator;
         _configuration = configuration;
         _paymentService = paymentService;
+        _commercialBankService = commercialBankService;
 
         var bankUrl = _configuration["commercialBankUrl"] ?? "http://localhost:8085";
         _http.BaseAddress = new Uri(bankUrl);
@@ -48,7 +52,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         if (accountData is null)
             return new StartSimulationResponse { Status = "error", Message = "Invalid bank account response" };
 
-        _http.DefaultRequestHeaders.Add("X-API-Key", accountData.api_key);
+        _commercialBankService.AccountNumber = accountData.account_number;
 
         var notificationUrl = _configuration["bankNotificationUrl"] ?? "http://localhost:7121/api/banknotification";
         var notifyResponse = await RetryHelper.RetryAsync(
@@ -126,7 +130,6 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
                         toBankName: "commercial-bank",
                         amount: totalCost,
                         description: $"Order #{orderNumber}",
-                        apiKey: accountData.api_key,
                         cancellationToken),
                     operationName: "Send machine payment");
                 Console.WriteLine($"Payment made: Tx#{payment.transaction_number}");
@@ -149,7 +152,6 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
     private class AccountResponse
     {
         public string account_number { get; set; } = default!;
-        public string api_key { get; set; } = default!;
     }
 
     private class LoanResponse
