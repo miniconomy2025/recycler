@@ -53,8 +53,8 @@ public class CreateOrderCommandHandler(
                     var availableOrderItem = new OrderItemDto()
                     { 
                         RawMaterial = rawMaterial,
-                        Quantity = orderItem.QuantityInKg, 
-                        Price = rawMaterial.PricePerKg
+                        QuantityInKg = orderItem.QuantityInKg, 
+                        PricePerKg = rawMaterial.PricePerKg
                     };
                     
                     stockToReserve.Add(materialInventory, availableOrderItem);
@@ -93,8 +93,8 @@ public class CreateOrderCommandHandler(
             
             foreach (var materialInventory in stockToReserve.Keys)
             {
-                materialInventory.AvailableQuantityInKg -= stockToReserve[materialInventory].Quantity;
-                materialInventory.ReservedQuantityInKg += stockToReserve[materialInventory].Quantity;
+                materialInventory.AvailableQuantityInKg -= stockToReserve[materialInventory].QuantityInKg;
+                materialInventory.ReservedQuantityInKg += stockToReserve[materialInventory].QuantityInKg;
                 
                 await materialInventoryRepository.UpdateAsync(materialInventory, 
                     new List<string> {"AvailableQuantityInKg", "ReservedQuantityInKg"});
