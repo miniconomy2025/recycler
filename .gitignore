@@ -4,4 +4,4 @@
 /backend
 
 **/*.vscode
-**/*.pem/backend/
+**/*.pem
