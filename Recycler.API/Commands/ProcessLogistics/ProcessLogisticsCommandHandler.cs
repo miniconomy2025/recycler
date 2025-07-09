@@ -10,12 +10,12 @@ namespace RecyclerApi.Handlers
 {
     public class InternalLogisticsRecord
     {
-        public string InternalRecordId { get; set; }
-        public string ExternalId { get; set; } 
-        public string Type { get; set; }
+        public string? InternalRecordId { get; set; }
+        public string? ExternalId { get; set; } 
+        public string? Type { get; set; }
         public DateTime Timestamp { get; set; }
-        public List<LogisticsItemDto> Items { get; set; }
-        public string Status { get; set; } 
+        public List<LogisticsItemDto>? Items { get; set; }
+        public string? Status { get; set; } 
     }
 
     public class ProcessLogisticsCommandHandler : IRequestHandler<ProcessLogisticsCommand, LogisticsResponseDto>

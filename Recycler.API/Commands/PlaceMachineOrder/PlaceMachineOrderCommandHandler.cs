@@ -20,7 +20,7 @@ namespace RecyclerApi.Handlers
 
         public async Task<MachineOrderResponseDto> Handle(PlaceMachineOrderCommand request, CancellationToken cancellationToken)
         {
-            var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "http://localhost:3000";
+            var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "";
             var httpClient = _httpClientFactory.CreateClient();
             httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
 
