@@ -99,7 +99,6 @@ namespace Recycler.API.Services
 
             try
             {
-                // Get all available phones 
                 var phoneInventoriesSql = @"
                     SELECT 
                         pi.phone_id as PhoneId,
@@ -128,7 +127,6 @@ namespace Recycler.API.Services
                 var allRecycledMaterials = new List<RecycledMaterialResult>();
                 var processedPhoneModels = new List<string>();
 
-                // Process all phones through the recycling machine
                 foreach (var phoneInventory in phoneInventories)
                 {
                     var phoneId = phoneInventory.PhoneId;
@@ -136,10 +134,8 @@ namespace Recycler.API.Services
                     var model = phoneInventory.Model;
                     var brandName = phoneInventory.BrandName;
 
-                    // Get recycling estimate for this phone type
                     var estimate = await EstimateRecyclingYieldAsync(phoneId, quantity);
 
-                    // Update phone inventory (set to 0 all phones recycled)
                     var updatePhoneInventorySql = @"
                         UPDATE phoneinventory 
                         SET quantity = 0 
@@ -147,26 +143,22 @@ namespace Recycler.API.Services
 
                     await connection.ExecuteAsync(updatePhoneInventorySql, new { PhoneId = phoneId }, transaction);
 
-                    // Process materials from each phone type
                     foreach (var (materialName, estimatedQuantity) in estimate.EstimatedMaterials)
                     {
                         var quantityInKg = (int)Math.Floor(estimatedQuantity);
 
                         if (quantityInKg > 0)
                         {
-                            // Get material ID
                             var materialIdSql = "SELECT id FROM rawmaterial WHERE name = @MaterialName";
                             var materialId = await connection.QuerySingleOrDefaultAsync<int?>(materialIdSql, new { MaterialName = materialName }, transaction);
 
                             if (materialId.HasValue)
                             {
-                                // Check if material inventory exists
                                 var existingInventorySql = "SELECT available_quantity_in_kg FROM materialinventory WHERE material_id = @MaterialId";
                                 var existingQuantity = await connection.QuerySingleOrDefaultAsync<int?>(existingInventorySql, new { MaterialId = materialId }, transaction);
 
                                 if (existingQuantity.HasValue)
                                 {
-                                    // Update existing inventory
                                     var updateMaterialSql = @"
                                         UPDATE materialinventory 
                                         SET available_quantity_in_kg = available_quantity_in_kg + @Quantity 
@@ -175,14 +167,12 @@ namespace Recycler.API.Services
                                 }
                                 else
                                 {
-                                    // Create new inventory record
                                     var insertMaterialSql = @"
                                         INSERT INTO materialinventory (material_id, available_quantity_in_kg) 
                                         VALUES (@MaterialId, @Quantity)";
                                     await connection.ExecuteAsync(insertMaterialSql, new { MaterialId = materialId, Quantity = quantityInKg }, transaction);
                                 }
 
-                                // Find existing material in results or add new
                                 var existingMaterial = allRecycledMaterials.FirstOrDefault(rm => rm.MaterialId == materialId.Value);
                                 if (existingMaterial != null)
                                 {

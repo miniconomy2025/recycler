@@ -70,7 +70,7 @@ namespace RecyclerApi.Handlers
                 LogisticsRecordId = newLogisticsRecord.InternalRecordId
             };
 
-            return Task.FromResult(response);
+            return response;
         }
     }
 }
