@@ -55,7 +55,7 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
                 return new RevenueReportDto
                 {
                     CompanyName = g.Key.company_name,
-                    OrderNumber = g.Key.order_number,
+                    OrderNumber = g.Key.order_number.ToString(),
                     Status = g.Key.status,
                     CreatedAt = g.Key.created_at,
                     Items = items,
