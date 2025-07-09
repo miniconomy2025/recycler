@@ -23,6 +23,6 @@ export const fetcher = (path: string, options: FetcherOptions = {}) => {
       const error = await res.json().catch(() => ({}));
       return Promise.reject({ status: res.status, ...error });
     }
-    return res.json();
+    return await res.json();
   });
 };
