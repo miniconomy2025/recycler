@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("InternalApiCors", policy =>
     {
         policy
-            .WithOrigins("http://localhost:3000")
+            .WithOrigins("https://recycler.projects.bbdgrad.com")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

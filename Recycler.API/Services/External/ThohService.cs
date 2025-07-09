@@ -43,17 +43,17 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
                     return thohRawMaterialList;
                     
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // ToDo: a way to log errors
                 }
             }
         }
-        catch (HttpRequestException httpRequestException)
+        catch (HttpRequestException)
         {
             // ToDo: a way to log errors - "THOH Service is not available"
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // ToDo: a way to log errors
         }

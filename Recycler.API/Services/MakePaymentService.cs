@@ -14,7 +14,7 @@ public class MakePaymentService
     public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, string toBankName, decimal amount, string description, string apiKey, CancellationToken cancellationToken = default)
     {
         var httpClient = _httpClientFactory.CreateClient();
-        var bankBaseUrl = _config["commercialBank"] ?? "http://localhost:8085";
+        var bankBaseUrl = _config["commercialBank"] ?? "";
         httpClient.BaseAddress = new Uri(bankBaseUrl);
 
         httpClient.DefaultRequestHeaders.Clear();

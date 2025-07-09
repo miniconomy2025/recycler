@@ -7,6 +7,6 @@ namespace RecyclerApi.Commands
 {
      public class ReceiveLogisticsItemsCommand : IRequest<Unit> 
     {
-        public List<LogisticsItemDto> ItemsToReceive { get; set; }
+        public List<LogisticsItemDto>? ItemsToReceive { get; set; }
     }
 }

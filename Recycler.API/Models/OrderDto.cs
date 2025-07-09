@@ -6,13 +6,13 @@ public class OrderDto
 
     public int OrderStatusId { get; set; }
     
-    public OrderStatus OrderStatus { get; set; }
+    public OrderStatus? OrderStatus { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
     public int SupplierId { get; set; }
 
-    public IEnumerable<OrderItem> OrderItems { get; set; }
+    public IEnumerable<OrderItem>? OrderItems { get; set; }
 
     public OrderDto MapDbObjects(Order order, OrderStatus orderStatus, IEnumerable<OrderItem> orderItems)
     {

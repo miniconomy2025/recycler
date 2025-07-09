@@ -9,12 +9,12 @@ namespace Recycler.API;
 public class OrdersController(IMediator mediator, IGenericRepository<Order> orderRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAllOrders()
+    public IActionResult GetAllOrders()
     {
         // restrict with supplier
         return Ok(new List<Order>());
     }
-    
+
     [HttpGet]
     [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
