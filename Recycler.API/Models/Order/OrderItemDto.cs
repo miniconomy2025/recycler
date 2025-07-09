@@ -4,15 +4,15 @@ public class OrderItemDto
 {
     public RawMaterial RawMaterial { get; set; }
 
-    public int Quantity { get; set; }
+    public int QuantityInKg { get; set; }
     
-    public decimal Price { get; set; }
+    public decimal PricePerKg { get; set; }
     
     public OrderItemDto MapDbObjects(OrderItem orderItem, RawMaterial rawMaterial)
     {
         RawMaterial = rawMaterial;
-        Quantity = orderItem.Quantity;
-        Price = orderItem.Price;
+        QuantityInKg = orderItem.QuantityInKg;
+        PricePerKg = orderItem.PricePerKg;
 
         return this;
     }
