@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Recycler.API.Models.ExternalApiResponses;
+using Recycler.API.Models.Thoh;
 
 namespace Recycler.API.Services;
 
@@ -20,6 +21,35 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
             
         }
     }
+    
+    public async Task<List<RecycledPhoneModelDto>> GetAvailableRecycledPhonesAsync()
+    {
+        try
+        {
+            var response = await httpClient.GetAsync("recycled-phones");
+            response.EnsureSuccessStatusCode();
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!string.IsNullOrWhiteSpace(responseBody))
+            {
+                var phones = JsonSerializer.Deserialize<List<RecycledPhoneModelDto>>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return phones ?? new List<RecycledPhoneModelDto>();
+            }
+        }
+        catch (HttpRequestException)
+        {
+        }
+        catch (Exception)
+        {
+        }
+
+        return new List<RecycledPhoneModelDto>();
+    }
 
     private async Task<ThohRawMaterialListResponseDto?> GetRawMaterialPriceFromThoh()
     {
@@ -27,21 +57,21 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
         {
             HttpResponseMessage response = await httpClient.GetAsync("simulation/raw-materials");
             response.EnsureSuccessStatusCode();
-            
+
             var responseBody = await response.Content.ReadAsStringAsync();
             if (!string.IsNullOrEmpty(responseBody))
             {
                 try
                 {
                     var thohRawMaterialList = JsonSerializer.Deserialize<ThohRawMaterialListResponseDto>(
-                        responseBody, 
+                        responseBody,
                         new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true
                         });
-                    
+
                     return thohRawMaterialList;
-                    
+
                 }
                 catch (Exception)
                 {
@@ -57,7 +87,7 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
         {
             // ToDo: a way to log errors
         }
-        
+
         return null;
     }
 
