@@ -43,6 +43,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddSingleton<ISimulationClock, SimulationClock>();
+builder.Services.AddSingleton<ICommercialBankService, CommercialBankService>();
 builder.Services.AddScoped<IRecyclingService, RecyclingService>();
 
 builder.Services.AddOpenApi();

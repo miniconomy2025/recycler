@@ -12,7 +12,8 @@ public class CreateOrderCommandHandler(
     ISimulationClock simulationClock,
     IGenericRepository<OrderStatus> orderStatusRepository,
     IGenericRepository<Order> orderRepository,
-    IGenericRepository<OrderItem> orderItemRepository) : IRequestHandler<CreateOrderCommand, GenericResponse<OrderDto>>
+    IGenericRepository<OrderItem> orderItemRepository,
+    ICommercialBankService commercialBankService) : IRequestHandler<CreateOrderCommand, GenericResponse<OrderDto>>
 {
     public async Task<GenericResponse<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
@@ -115,7 +116,7 @@ public class CreateOrderCommandHandler(
 
         return new GenericResponse<OrderDto>(simulationClock)
         {
-            Data = new OrderDto(simulationClock).MapDbObjects(createdOrder,
+            Data = new OrderDto(simulationClock, commercialBankService).MapDbObjects(createdOrder,
                 orderStatus,
                 availableOrderItems),
             IsSuccess = orderSuccess,
