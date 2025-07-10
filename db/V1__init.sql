@@ -147,7 +147,7 @@ CREATE TABLE Machines (
     id SERIAL PRIMARY KEY,
     machine_id INTEGER NOT NULL,
     received_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) NOT NULL 
+    is_operational BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE INDEX idx_companies_role_id ON Companies (role_id);

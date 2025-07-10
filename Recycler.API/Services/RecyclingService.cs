@@ -18,6 +18,7 @@ namespace Recycler.API.Services
     public class RecyclingService : IRecyclingService
     {
         private readonly IConfiguration _configuration;
+        private const int MACHINE_PRODUCTION_RATE = 20; 
 
         public RecyclingService(IConfiguration configuration)
         {
@@ -99,6 +100,47 @@ namespace Recycler.API.Services
 
             try
             {
+                 // check if we have any recycling machines
+                var totalMachinesSql = @"
+                    SELECT COUNT(*) 
+                    FROM Machines";
+                
+                var totalMachinesCount = await connection.QuerySingleAsync<int>(totalMachinesSql, transaction: transaction);
+                
+                if (totalMachinesCount == 0)
+                {
+                    return new RecyclingResult
+                    {
+                        Success = false,
+                        Message = "No recycling machines available. Please acquire recycling machines to process phones.",
+                        PhonesProcessed = 0,
+                        TotalMaterialsRecycled = 0
+                    };
+                }
+                
+                // Check how many operational machines we have
+                var operationalMachinesSql = @"
+                    SELECT COUNT(*) 
+                    FROM Machines 
+                    WHERE is_operational = true";
+                
+                var operationalMachinesCount = await connection.QuerySingleAsync<int>(operationalMachinesSql, transaction: transaction);
+                
+                if (operationalMachinesCount == 0)
+                {
+                    return new RecyclingResult
+                    {
+                        Success = false,
+                        Message = $"You have {totalMachinesCount} recycling machine(s), but none are operational. Please repair your machines before recycling.",
+                        PhonesProcessed = 0,
+                        TotalMaterialsRecycled = 0
+                    };
+                }
+                
+                // Calculate maximum processing capacity based on operational machines
+                var maxProcessingCapacity = operationalMachinesCount * MACHINE_PRODUCTION_RATE;
+                
+                // check available phones
                 var phoneInventoriesSql = @"
                     SELECT 
                         pi.phone_id as PhoneId,
@@ -108,7 +150,8 @@ namespace Recycler.API.Services
                     FROM phoneinventory pi
                     JOIN phone p ON pi.phone_id = p.id
                     JOIN phonebrand pb ON p.phone_brand_id = pb.id
-                    WHERE pi.quantity > 0";
+                    WHERE pi.quantity > 0
+                    ORDER BY pi.quantity DESC"; // Process phones with higher quantities first
 
                 var phoneInventories = await connection.QueryAsync<PhoneInventoryDto>(phoneInventoriesSql, transaction: transaction);
 
@@ -117,96 +160,120 @@ namespace Recycler.API.Services
                     return new RecyclingResult
                     {
                         Success = false,
-                        Message = "No phones available for recycling",
+                        Message = $"No phones available for recycling. You have {operationalMachinesCount} operational machine(s) with capacity to process {maxProcessingCapacity} phones.",
                         PhonesProcessed = 0,
                         TotalMaterialsRecycled = 0
                     };
                 }
 
-                var totalPhonesCount = phoneInventories.Sum(pi => pi.AvailableQuantity);
+                var totalAvailablePhones = phoneInventories.Sum(pi => pi.AvailableQuantity);
+                var phonesToProcess = Math.Min(totalAvailablePhones, maxProcessingCapacity);
+                var actualMachinesUsed = (int)Math.Ceiling((double)phonesToProcess / MACHINE_PRODUCTION_RATE);
+
                 var allRecycledMaterials = new List<RecycledMaterialResult>();
                 var processedPhoneModels = new List<string>();
+                var totalProcessedCount = 0;
 
                 foreach (var phoneInventory in phoneInventories)
                 {
+                    // Stop if we've reached our machine capacity
+                    if (totalProcessedCount >= phonesToProcess)
+                        break;
+
                     var phoneId = phoneInventory.PhoneId;
-                    var quantity = phoneInventory.AvailableQuantity;
+                    var availableQuantity = phoneInventory.AvailableQuantity;
                     var model = phoneInventory.Model;
                     var brandName = phoneInventory.BrandName;
 
-                    var estimate = await EstimateRecyclingYieldAsync(phoneId, quantity);
+                    // Calculate how many of this phone model we can process
+                    var remainingCapacity = phonesToProcess - totalProcessedCount;
+                    var quantityToProcess = Math.Min(availableQuantity, remainingCapacity);
+                    var quantityRemaining = availableQuantity - quantityToProcess;
 
-                    var updatePhoneInventorySql = @"
-                        UPDATE phoneinventory 
-                        SET quantity = 0 
-                        WHERE phone_id = @PhoneId";
-
-                    await connection.ExecuteAsync(updatePhoneInventorySql, new { PhoneId = phoneId }, transaction);
-
-                    foreach (var (materialName, estimatedQuantity) in estimate.EstimatedMaterials)
+                    if (quantityToProcess > 0)
                     {
-                        var quantityInKg = (int)Math.Floor(estimatedQuantity);
+                        var estimate = await EstimateRecyclingYieldAsync(phoneId, quantityToProcess);
 
-                        if (quantityInKg > 0)
+                        // Update phone inventory reduce by the amount we're processing
+                        var updatePhoneInventorySql = @"
+                            UPDATE phoneinventory 
+                            SET quantity = @QuantityRemaining 
+                            WHERE phone_id = @PhoneId";
+
+                        await connection.ExecuteAsync(updatePhoneInventorySql, 
+                            new { PhoneId = phoneId, QuantityRemaining = quantityRemaining }, 
+                            transaction);
+
+                        foreach (var (materialName, estimatedQuantity) in estimate.EstimatedMaterials)
                         {
-                            var materialIdSql = "SELECT id FROM rawmaterial WHERE name = @MaterialName";
-                            var materialId = await connection.QuerySingleOrDefaultAsync<int?>(materialIdSql, new { MaterialName = materialName }, transaction);
+                            var quantityInKg = (int)Math.Floor(estimatedQuantity);
 
-                            if (materialId.HasValue)
+                            if (quantityInKg > 0)
                             {
-                                var existingInventorySql = "SELECT available_quantity_in_kg FROM materialinventory WHERE material_id = @MaterialId";
-                                var existingQuantity = await connection.QuerySingleOrDefaultAsync<int?>(existingInventorySql, new { MaterialId = materialId }, transaction);
+                                var materialIdSql = "SELECT id FROM rawmaterial WHERE name = @MaterialName";
+                                var materialId = await connection.QuerySingleOrDefaultAsync<int?>(materialIdSql, new { MaterialName = materialName }, transaction);
 
-                                if (existingQuantity.HasValue)
+                                if (materialId.HasValue)
                                 {
-                                    var updateMaterialSql = @"
-                                        UPDATE materialinventory 
-                                        SET available_quantity_in_kg = available_quantity_in_kg + @Quantity 
-                                        WHERE material_id = @MaterialId";
-                                    await connection.ExecuteAsync(updateMaterialSql, new { MaterialId = materialId, Quantity = quantityInKg }, transaction);
-                                }
-                                else
-                                {
-                                    var insertMaterialSql = @"
-                                        INSERT INTO materialinventory (material_id, available_quantity_in_kg) 
-                                        VALUES (@MaterialId, @Quantity)";
-                                    await connection.ExecuteAsync(insertMaterialSql, new { MaterialId = materialId, Quantity = quantityInKg }, transaction);
-                                }
+                                    var existingInventorySql = "SELECT available_quantity_in_kg FROM materialinventory WHERE material_id = @MaterialId";
+                                    var existingQuantity = await connection.QuerySingleOrDefaultAsync<int?>(existingInventorySql, new { MaterialId = materialId }, transaction);
 
-                                var existingMaterial = allRecycledMaterials.FirstOrDefault(rm => rm.MaterialId == materialId.Value);
-                                if (existingMaterial != null)
-                                {
-                                    existingMaterial.QuantityInKg += quantityInKg;
-                                }
-                                else
-                                {
-                                    allRecycledMaterials.Add(new RecycledMaterialResult
+                                    if (existingQuantity.HasValue)
                                     {
-                                        MaterialId = materialId.Value,
-                                        MaterialName = materialName,
-                                        QuantityInKg = quantityInKg,
-                                        RecycledDate = DateTime.UtcNow,
-                                        SourcePhoneModels = $"{brandName} {model}"
-                                    });
+                                        var updateMaterialSql = @"
+                                            UPDATE materialinventory 
+                                            SET available_quantity_in_kg = available_quantity_in_kg + @Quantity 
+                                            WHERE material_id = @MaterialId";
+                                        await connection.ExecuteAsync(updateMaterialSql, new { MaterialId = materialId, Quantity = quantityInKg }, transaction);
+                                    }
+                                    else
+                                    {
+                                        var insertMaterialSql = @"
+                                            INSERT INTO materialinventory (material_id, available_quantity_in_kg) 
+                                            VALUES (@MaterialId, @Quantity)";
+                                        await connection.ExecuteAsync(insertMaterialSql, new { MaterialId = materialId, Quantity = quantityInKg }, transaction);
+                                    }
+
+                                    var existingMaterial = allRecycledMaterials.FirstOrDefault(rm => rm.MaterialId == materialId.Value);
+                                    if (existingMaterial != null)
+                                    {
+                                        existingMaterial.QuantityInKg += quantityInKg;
+                                    }
+                                    else
+                                    {
+                                        allRecycledMaterials.Add(new RecycledMaterialResult
+                                        {
+                                            MaterialId = materialId.Value,
+                                            MaterialName = materialName,
+                                            QuantityInKg = quantityInKg,
+                                            RecycledDate = DateTime.UtcNow,
+                                            SourcePhoneModels = $"{brandName} {model}"
+                                        });
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    processedPhoneModels.Add($"{quantity}x {brandName} {model}");
+                        processedPhoneModels.Add($"{quantityToProcess}x {brandName} {model}");
+                        totalProcessedCount += quantityToProcess;
+                    }
                 }
 
-                await transaction.CommitAsync();    
+                var leftoverPhones = totalAvailablePhones - totalProcessedCount;
+                var successMessage = leftoverPhones > 0 
+                    ? $"Recycling process completed! Processed {totalProcessedCount} phones using {actualMachinesUsed} recycling machine(s). {leftoverPhones} phones remain in inventory due to machine capacity limits. Processed: {string.Join(", ", processedPhoneModels)}"
+                    : $"Recycling process completed! Processed all {totalProcessedCount} phones using {actualMachinesUsed} recycling machine(s). Processed: {string.Join(", ", processedPhoneModels)}";
 
                 return new RecyclingResult
                 {
                     Success = true,
-                    Message = $"Recycling process completed! Processed {totalPhonesCount} phones using recycling machine. Processed: {string.Join(", ", processedPhoneModels)}",
+                    Message = successMessage,
                     RecycledMaterials = allRecycledMaterials,
                     TotalMaterialsRecycled = allRecycledMaterials.Sum(m => m.QuantityInKg),
-                    PhonesProcessed = totalPhonesCount,
+                    PhonesProcessed = totalProcessedCount,
                     ProcessingDate = DateTime.UtcNow,
                 };
+
             }
             catch (Exception ex)
             {
