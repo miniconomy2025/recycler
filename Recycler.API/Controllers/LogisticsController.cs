@@ -21,7 +21,6 @@ namespace RecyclerApi.Controllers
             _mediator = mediator;
         }
 
-      
         [HttpPost("/logistics")] 
         [ProducesResponseType(typeof(LogisticsResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -38,7 +37,7 @@ namespace RecyclerApi.Controllers
                 var command = new ProcessLogisticsCommand
                 {
                     Id = requestDto.Id,
-                    Type = requestDto.Type,
+                    Type = request.Type,
                     Items = requestDto.Items
                 };
 
@@ -61,34 +60,12 @@ namespace RecyclerApi.Controllers
             return Ok(result);
         }
 
-        
-        [HttpPost("deliveries")] 
-        [ProducesResponseType(typeof(ConsumerLogisticsDeliveryResponseDto), StatusCodes.Status200OK)]
+       
+        [HttpPost("consumer-deliveries")] 
+        [ProducesResponseType(typeof(ConsumerLogisticsDeliveryResponseDto), StatusCodes.Status200OK)] 
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> InitiateConsumerDelivery([FromBody] InitiateConsumerDeliveryCommand command)
-        {
-            try
-            {
-                var result = await _mediator.Send(command);
-                return Ok(result);
-            }
-            catch (ApplicationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred while initiating consumer delivery.", Details = ex.Message });
-            }
-        }
-
-        
-        [HttpPost("drop-offs")]
-        [ProducesResponseType(typeof(ConsumerLogisticsDropOffResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ProcessConsumerDropOff([FromBody] ConsumerLogisticsDropOffRequestDto requestDto)
+        public async Task<IActionResult> ProcessConsumerDeliveryNotification([FromBody] ConsumerLogisticsDeliveryNotificationRequestDto requestDto) // RENAMED
         {
             try
             {
@@ -98,10 +75,10 @@ namespace RecyclerApi.Controllers
                 }
                 if (string.IsNullOrEmpty(requestDto.ModelName) || requestDto.Quantity <= 0)
                 {
-                    return BadRequest(new { Message = "ModelName and Quantity (must be > 0) are required for drop-off items." });
+                    return BadRequest(new { Message = "ModelName and Quantity (must be > 0) are required for delivered items." });
                 }
 
-                var command = new ProcessConsumerDropOffCommand
+                var command = new ProcessConsumerDeliveryNotificationCommand 
                 {
                     Status = requestDto.Status,
                     ModelName = requestDto.ModelName,
@@ -113,9 +90,8 @@ namespace RecyclerApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the drop-off.", Details = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the consumer delivery notification.", Details = ex.Message });
             }
         }
     }
 }
-

@@ -3,7 +3,7 @@ using RecyclerApi.Models;
 
 namespace RecyclerApi.Commands
 {
-    public class ProcessConsumerDropOffCommand : IRequest<ConsumerLogisticsDropOffResponseDto>
+    public class ProcessConsumerDeliveryNotificationCommand : IRequest<ConsumerLogisticsDeliveryResponseDto> 
     {
         public string Status { get; set; }
         public string ModelName { get; set; }

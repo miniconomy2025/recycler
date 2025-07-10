@@ -4,43 +4,30 @@ using RecyclerApi.Models;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq; 
+using System.Linq;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
+using Dapper;
+using System;
+using System.Text.Json;
 
 namespace RecyclerApi.Handlers
 {
-    public class InternalLogisticsRecord
-    {
-        public string? InternalRecordId { get; set; }
-        public string? ExternalId { get; set; } 
-        public string? Type { get; set; }
-        public DateTime Timestamp { get; set; }
-        public List<LogisticsItemDto>? Items { get; set; }
-        public string? Status { get; set; } 
-    }
-
     public class ProcessLogisticsCommandHandler : IRequestHandler<ProcessLogisticsCommand, LogisticsResponseDto>
     {
         private readonly IMediator _mediator;
-        private static List<InternalLogisticsRecord> _simulatedLogisticsRecords = new List<InternalLogisticsRecord>();
+        private readonly IConfiguration _configuration; 
 
-        public ProcessLogisticsCommandHandler(IMediator mediator)
+        public ProcessLogisticsCommandHandler(IMediator mediator, IConfiguration configuration)
         {
             _mediator = mediator;
+            _configuration = configuration;
         }
 
         public async Task<LogisticsResponseDto> Handle(ProcessLogisticsCommand request, CancellationToken cancellationToken)
         {
-        
-            var newLogisticsRecord = new InternalLogisticsRecord
-            {
-                InternalRecordId = Guid.NewGuid().ToString(),
-                ExternalId = request.Id,
-                Type = request.Type,
-                Timestamp = DateTime.UtcNow,
-                Items = request.Items,
-                Status = "Logged"
-            };
-            _simulatedLogisticsRecords.Add(newLogisticsRecord);
+
+            var newInternalRecordId = Guid.NewGuid(); 
 
             string message = $"Logistics event '{request.Type}' with ID '{request.Id}' processed successfully.";
 
@@ -49,10 +36,9 @@ namespace RecyclerApi.Handlers
                 if (request.Items != null && request.Items.Any())
                 {
                     var receiveCommand = new ReceiveLogisticsItemsCommand { ItemsToReceive = request.Items };
-                    await _mediator.Send(receiveCommand, cancellationToken); 
+                    await _mediator.Send(receiveCommand, cancellationToken);
 
-                   
-                    message += " Inventory updated for delivered items (including phones).";
+                    message += " Inventory updated for delivered items.";
                 }
                 else
                 {
@@ -61,16 +47,16 @@ namespace RecyclerApi.Handlers
             }
             else if (request.Type == "PICKUP")
             {
-                 message += " Pickup event logged.";
+                 message += " Pickup event logged. Inventory adjustment logic for pickup would go here (e.g., decrementing inventory).";
             }
 
             var response = new LogisticsResponseDto
             {
                 Message = message,
-                LogisticsRecordId = newLogisticsRecord.InternalRecordId
+                LogisticsRecordId = newInternalRecordId.ToString()
             };
 
-            return response;
+            return Task.FromResult(response);
         }
     }
 }
