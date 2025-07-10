@@ -18,6 +18,6 @@ namespace Recycler.API.Commands.CreatePickupRequest
     public class PickupItem
     {
         public string itemName { get; set; } = default!;
-        public int quantity { get; set; }
+        public decimal quantity { get; set; }
     }
 }
