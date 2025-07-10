@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Recycler.API
 {
-    public class ProcessConsumerDeliveryNotificationCommandHandler : IRequestHandler<ProcessConsumerDeliveryNotificationCommand, ConsumerLogisticsDeliveryResponseDto> // Updated return type
+    public class ProcessConsumerDeliveryNotificationCommandHandler : IRequestHandler<ProcessConsumerDeliveryNotificationCommand, ConsumerLogisticsDeliveryResponseDto> 
     {
         private readonly IConfiguration _configuration;
 
