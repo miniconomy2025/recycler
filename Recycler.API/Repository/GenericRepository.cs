@@ -66,6 +66,19 @@ public class GenericRepository<T>: IGenericRepository<T> where T : class
             new { ColumnValue = columnValue });
     }
 
+    public async Task<IEnumerable<T>> GetByWhereClauseAsync(string condition, object value)
+    {
+        if (string.IsNullOrEmpty(condition)) 
+        {
+            return []; 
+        }
+    
+        await using NpgsqlConnection connection = GetConnection();
+        
+        return await connection.QueryAsync<T>($"SELECT * FROM {_tableName} WHERE {condition.Trim()} @Value",
+            new { Value = value });
+    }
+
     public async Task<int> CreateAsync(T entity)
     {
         await using NpgsqlConnection connection = GetConnection();

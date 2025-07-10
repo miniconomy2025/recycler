@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Recycler.API.Models;
 using Recycler.API.Queries.GetRevenueReport;
+using Recycler.API.Services;
 
 namespace Recycler.API.Controllers;
 
 [ApiController]
 [Route("internal/stock")]
 [EnableCors("InternalApiCors")]
-public class StockController(IMediator mediator) : ControllerBase
+public class StockController(IMediator mediator, ILogService logService) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(StockSet), StatusCodes.Status200OK)]
@@ -17,6 +18,9 @@ public class StockController(IMediator mediator) : ControllerBase
     {
         var query = new GetStockQuery();
         var result = await mediator.Send(query);
+
+        await logService.CreateLog(HttpContext, "", Ok(result));
+        
         return Ok(result);
     }
 }

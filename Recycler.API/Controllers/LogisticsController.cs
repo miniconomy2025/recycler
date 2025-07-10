@@ -6,6 +6,7 @@ using Recycler.API.Queries;
 using Recycler.API.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Recycler.API.Services;
 using System; 
 
 namespace Recycler.API.Controllers
@@ -16,10 +17,12 @@ namespace Recycler.API.Controllers
     public class LogisticsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ILogService _logService;
 
-        public LogisticsController(IMediator mediator)
+        public LogisticsController(IMediator mediator, ILogService logService)
         {
             _mediator = mediator;
+            _logService = logService;
         }
 
         [HttpPost("/logistics")] 
@@ -43,11 +46,16 @@ namespace Recycler.API.Controllers
                 };
 
                 var result = await _mediator.Send(command);
-                return Ok(result);
+                
+                await _logService.CreateLog(HttpContext, requestDto, Ok(result));
+                
+                return Ok(result); 
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the general logistics event.", Details = ex.Message });
+                await _logService.CreateLog(HttpContext, requestDto, StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message }));
+              
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message });
             }
         }
 

@@ -10,6 +10,7 @@ namespace Recycler.API.Controllers;
 public class PhonesNotificationsController(
     ThohService thohPhoneService,
     ConsumerLogisticsService consumerLogisticsService,
+    ILogService logService,
     MakePaymentService paymentService
 ) : ControllerBase
 {
@@ -62,10 +63,17 @@ public class PhonesNotificationsController(
                 });
             }
         }
+
         results.Add(new
         {
             Status = "Success",
         });
+
+        await logService.CreateLog(HttpContext, "", Ok(new
+        {
+            message = "Completed delivery orders for all phones.",
+            results
+        }));
 
         return Ok(new
         {
