@@ -25,7 +25,7 @@ namespace Recycler.API.Commands.CreatePickupRequest;
         {
             try
             {
-                var logisticsUrl = _configuration["bulkLogisticsUrl"] ?? "https://bulk-logistics-api.projects.bbdgrad.com";
+                var logisticsUrl = _configuration["bulkLogisticsUrl"] ?? "";
 
                 var pickupRequest = new
                 {
