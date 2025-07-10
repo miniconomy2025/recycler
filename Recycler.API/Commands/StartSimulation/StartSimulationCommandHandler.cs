@@ -42,8 +42,13 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
         _clock.Start(realStart);
 
+        var notificationUrl = _configuration["bankNotificationUrl"] ?? "http://localhost:7121/api/banknotification";
+
         var accountResponse = await RetryHelper.RetryAsync(
-            () => _http.PostAsJsonAsync("/account", new { }, cancellationToken),
+            () => _http.PostAsJsonAsync("/account", new
+            {
+                notification_url = notificationUrl
+            }, cancellationToken),
             maxAttempts: 20,
             operationName: "Create bank account");
         if (!accountResponse.IsSuccessStatusCode)
@@ -54,21 +59,6 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
             return new StartSimulationResponse { Status = "error", Message = "Invalid bank account response" };
 
         _commercialBankService.AccountNumber = accountData.account_number;
-
-        var notificationUrl = _configuration["bankNotificationUrl"] ?? "http://localhost:7121/api/banknotification";
-        var notifyResponse = await RetryHelper.RetryAsync(
-            () => _http.PostAsJsonAsync("/account/me/notify", new
-            {
-                notification_url = notificationUrl
-            }, cancellationToken),
-            operationName: "Register bank notification");
-
-
-        if (!notifyResponse.IsSuccessStatusCode)
-        {
-            var msg = await notifyResponse.Content.ReadAsStringAsync(cancellationToken);
-            return new StartSimulationResponse { Status = "error", Message = $"Failed to register notification URL: {msg}" };
-        }
 
         var thoHUrl = _configuration["thoHApiUrl"] ?? "http://localhost:8084";
         var machinesResponse = await RetryHelper.RetryAsync(
@@ -148,7 +138,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
             var pickupCommand = new CreatePickupRequestCommand
             {
-                originalExternalOrder = orderNumber,
+                originalExternalOrder = orderNumber ?? "",
                 originCompany = thoHCompany,
                 destinationCompany = recyclerCompany,
                 items = new List<PickupItem>
@@ -178,7 +168,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
                         () => _paymentService.SendPaymentAsync(
                             toAccountNumber: pickupResult.BulkLogisticsBankAccount!,
                             amount: (decimal)pickupResult.Cost,
-                            description: pickupResult.PickupRequestId.ToString(),
+                            description: pickupResult.PickupRequestId.ToString() ?? "",
                             cancellationToken),
                         operationName: "Send logistics payment");
 
