@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Recycler.API;
 using Recycler.API.Services;
+using Recycler.API.Services.Interfaces;
 
 CultureInfo.CurrentCulture = new CultureInfo("en-ZA") { NumberFormat = { NumberDecimalSeparator = "." } };
 
@@ -45,6 +46,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<ISimulationClock, SimulationClock>();
 builder.Services.AddSingleton<ICommercialBankService, CommercialBankService>();
 builder.Services.AddScoped<IRecyclingService, RecyclingService>();
+builder.Services.AddHostedService<RecyclingBackgroundService>();
 
 builder.Services.AddOpenApi();
 
@@ -68,6 +70,9 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
 builder.Services.AddScoped<MakePaymentService>();
 builder.Services.AddScoped<IRawMaterialService, RawMaterialService>();
+builder.Services.AddScoped<ILogService, LogService>();
+builder.Services.AddScoped<MakePaymentService, MakePaymentService>();
+builder.Services.AddScoped<CommercialBankService, CommercialBankService>();
 
 builder.Services.AddHttpClient();
 

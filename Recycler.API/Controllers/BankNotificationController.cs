@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Recycler.API.Services;
 
 namespace Recycler.API.Controllers;
 
@@ -10,15 +11,18 @@ public class BankNotificationController : ControllerBase
     private readonly IGenericRepository<Order> _orderRepository;
     private readonly IGenericRepository<OrderStatus> _orderStatusRepository;
     private readonly ILogger<BankNotificationController> _logger;
+    private readonly ILogService _logService;
 
     public BankNotificationController(
         IGenericRepository<Order> orderRepository,
         IGenericRepository<OrderStatus> orderStatusRepository,
-        ILogger<BankNotificationController> logger)
+        ILogger<BankNotificationController> logger,
+        ILogService logService)
     {
         _orderRepository = orderRepository;
         _orderStatusRepository = orderStatusRepository;
         _logger = logger;
+        _logService = logService;
     }
 
     [HttpPost]
@@ -59,11 +63,18 @@ public class BankNotificationController : ControllerBase
             await _orderRepository.UpdateAsync(order,  ["OrderStatusId"]);
 
             _logger.LogInformation("Order {orderId} marked as Approved due to payment", order.Id);
-            return Ok();
+            
+            
+            await _logService.CreateLog(HttpContext, notification, Ok());
+            
+            return  Ok();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process payment notification");
+            
+            await _logService.CreateLog(HttpContext, notification, StatusCode(500, "Internal error processing payment"));
+
             return StatusCode(500, "Internal error processing payment");
         }
     }
