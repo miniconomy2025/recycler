@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS Log (
    id SERIAL CONSTRAINT pk_log PRIMARY KEY,
    request_source VARCHAR NOT NULL,
    request_endpoint VARCHAR NOT NULL,
-   request_body VARCHAR,
-   response VARCHAR
+   request_body JSONB,
+   response JSONB,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

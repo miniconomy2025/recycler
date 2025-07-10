@@ -92,7 +92,8 @@ public class GenericRepository<T>: IGenericRepository<T> where T : class
         properties.ForEach(prop =>
         {
             string columnName = GetColumnNameFromProperty(prop.Name);
-            string columnValue = $"@{prop.Name}";
+            bool isJsonb = prop.GetCustomAttribute<ColumnAttribute>()?.TypeName == "jsonb";
+            string columnValue = $"@{prop.Name}{(isJsonb ? "::jsonb" : "")}";
             columnAndValues.Add(columnName, columnValue);
         });
         

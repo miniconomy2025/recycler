@@ -11,7 +11,13 @@ public class Log()
     
     public string RequestEndpoint { get; set; }
     
+    
+    [Column(TypeName = "jsonb")]
     public string RequestBody { get; set; }
     
+    
+    [Column(TypeName = "jsonb")]
     public string Response { get; set; }
+    
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 }

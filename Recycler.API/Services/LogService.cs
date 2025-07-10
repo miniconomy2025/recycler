@@ -21,7 +21,8 @@ public class LogService(IGenericRepository<Log> logRepository) : GenericService<
             RequestSource = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}",
             RequestEndpoint = $"{httpContext.Request.Path}{httpContext.Request.QueryString}",
             RequestBody = JsonSerializer.Serialize(request),
-            Response = JsonSerializer.Serialize(response)
+            Response = JsonSerializer.Serialize(response),
+            Timestamp = DateTime.Now
         });
     }
 }
