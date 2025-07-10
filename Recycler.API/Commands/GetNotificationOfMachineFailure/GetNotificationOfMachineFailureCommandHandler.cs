@@ -17,7 +17,7 @@ namespace RecyclerApi.Handlers
                 {
                     firstOperationalMachine.IsOperational = false;
                     
-                    await machinesRepository.UpdateAsync(firstOperationalMachine, ["is_operational"]);
+                    await machinesRepository.UpdateAsync(firstOperationalMachine, ["IsOperational"]);
                 }
             }
         }
