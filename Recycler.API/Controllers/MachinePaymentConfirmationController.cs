@@ -17,7 +17,7 @@ public class MachinePaymentConfirmationController(
     [HttpPost]
     public async Task<IActionResult> ConfirmMachinePayment([FromBody] MachinePaymentConfirmationDto body)
     {
-        if (string.IsNullOrEmpty(body.OrderNumber))
+        if (string.IsNullOrEmpty(body.OrderId))
         {
             return BadRequest(new { message = "Missing orderNumber" });
         }
@@ -29,7 +29,7 @@ public class MachinePaymentConfirmationController(
 
             var pickupCommand = new CreatePickupRequestCommand
             {
-                originalExternalOrder = body.OrderNumber,
+                originalExternalOrder = body.OrderId,
                 originCompany = thoHCompany,
                 destinationCompany = recyclerCompany,
                 items = new List<PickupItem>
@@ -37,7 +37,7 @@ public class MachinePaymentConfirmationController(
                     new PickupItem
                     {
                         itemName = "recycling_machine",
-                        quantity = 2,
+                        quantity = body.TotalWeight,
                     }
                 }
             };
