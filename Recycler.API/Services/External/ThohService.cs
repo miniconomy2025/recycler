@@ -8,7 +8,7 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
 {
     private HttpClient httpClient { get; } = httpClientFactory.CreateClient(nameof(ThohService));
         
-    public async Task GetAndUpdateRawMaterialPrice()
+    public async Task GetAndUpdateRawMaterialPriceAsync()
     {
         var thohRawMaterialList = await GetRawMaterialPriceFromThoh();
         
