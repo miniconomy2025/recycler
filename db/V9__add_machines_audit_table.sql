@@ -1,4 +1,6 @@
 CREATE TABLE IF NOT EXISTS MachinesAuditLogs (
+    id SERIAL PRIMARY KEY,
+    audit_action_id INTEGER NOT NULL,
     machine_id INTEGER NOT NULL,
     received_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     is_operational BOOL NOT NULL,
