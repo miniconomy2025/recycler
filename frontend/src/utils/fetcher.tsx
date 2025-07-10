@@ -1,6 +1,6 @@
 import { FetcherOptions } from "../types/FetcherOptions";
 
-const BASE_URL = 'https://localhost:7121/internal';
+const BASE_URL = 'https://recycler.projects.bbdgrad.com/internal';
 
 export const fetcher = (path: string, options: FetcherOptions = {}) => {
   const { body, headers = {}, ...rest } = options;

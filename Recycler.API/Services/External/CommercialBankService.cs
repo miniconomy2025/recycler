@@ -2,5 +2,5 @@ namespace Recycler.API.Services;
 
 public class CommercialBankService : ICommercialBankService
 {
-    public string AccountNumber { get; set; }
+    public new string AccountNumber { get; set; } = "";
 }

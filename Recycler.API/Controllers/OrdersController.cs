@@ -15,7 +15,6 @@ public class OrdersController(IMediator mediator, ILogService logService) : Cont
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetOrderById([FromQuery] int id)
     {
-        // get Supplier's Details compare against order number
         var query = new GetOrderByIdQuery(id);
         
         var response =  Ok(await mediator.Send(query));

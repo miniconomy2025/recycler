@@ -36,13 +36,13 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
-        DateTime? realStart = request.epochStartTime.HasValue
-            ? DateTimeOffset.FromUnixTimeSeconds(request.epochStartTime.Value).UtcDateTime
+        DateTime? realStart = request.EpochStartTime.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(request.EpochStartTime.Value).UtcDateTime
             : null;
 
         _clock.Start(realStart);
 
-        var notificationUrl = _configuration["bankNotificationUrl"] ?? "http://localhost:7121/api/banknotification";
+        var notificationUrl = $"{_configuration["recyclerApi:baseUrl"]}{_configuration["recyclerApi:bankNotificationPath"]}";
 
         var accountResponse = await RetryHelper.RetryAsync(
             () => _http.PostAsJsonAsync("/account", new
@@ -62,7 +62,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
         var thoHUrl = _configuration["thoHApiUrl"] ?? "http://localhost:8084";
         var machinesResponse = await RetryHelper.RetryAsync(
-            () => _http.GetAsync($"{thoHUrl}/simulation/machines", cancellationToken),
+            () => _http.GetAsync($"{thoHUrl}/machines", cancellationToken),
             operationName: "Fetch machines from THoH");
         if (!machinesResponse.IsSuccessStatusCode)
             return new StartSimulationResponse { Status = "error", Message = "Could not retrieve machine list" };
@@ -134,7 +134,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         try
         {
             var recyclerCompany = "recycler";
-            var thoHCompany = "thoh_company";
+            var thoHCompany = "thoh";
 
             var pickupCommand = new CreatePickupRequestCommand
             {
