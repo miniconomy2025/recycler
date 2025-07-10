@@ -36,8 +36,8 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
-        DateTime? realStart = request.StartTime.HasValue
-            ? DateTimeOffset.FromUnixTimeSeconds(request.StartTime.Value).UtcDateTime
+        DateTime? realStart = request.epochStartTime.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(request.epochStartTime.Value).UtcDateTime
             : null;
 
         _clock.Start(realStart);
