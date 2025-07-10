@@ -2,6 +2,7 @@ using MediatR;
 using Recycler.API.Services;
 using RecyclerApi.Commands;
 using Recycler.API.Utils;
+using Recycler.API.Commands.CreatePickupRequest;
 
 namespace Recycler.API.Commands.StartSimulation;
 
@@ -139,7 +140,70 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
                 return new StartSimulationResponse { Status = "error", Message = $"Machine payment failed: {ex.Message}" };
             }
         }
+        
+        try
+        {
+            var recyclerCompany = "recycler";
+            var thoHCompany = "thoh_company";
 
+            var pickupCommand = new CreatePickupRequestCommand
+            {
+                originalExternalOrder = orderNumber,
+                originCompany = thoHCompany,
+                destinationCompany = recyclerCompany,
+                items = new List<PickupItem>
+                    {
+                        new PickupItem
+                        {
+                            itemName = "recycling_machine",
+                            quantity = 2,
+                        }
+                    }
+            };
+
+            var pickupResult = await RetryHelper.RetryAsync(
+                () => _mediator.Send(pickupCommand, cancellationToken),
+                operationName: "Create logistics pickup request");
+
+            if (pickupResult.Success)
+            {
+                Console.WriteLine($"Logistics pickup request created: ID #{pickupResult.PickupRequestId}, Cost: {pickupResult.Cost}");
+
+
+                if (!string.IsNullOrEmpty(pickupResult.BulkLogisticsBankAccount) && pickupResult.Cost > 0)
+                {
+                    try
+                    {
+                        var logisticsPaymentResult = await RetryHelper.RetryAsync(
+                        () => _paymentService.SendPaymentAsync(
+                            toAccountNumber: pickupResult.BulkLogisticsBankAccount!,
+                            amount: (decimal)pickupResult.Cost,
+                            description: pickupResult.PickupRequestId.ToString(),
+                            cancellationToken),
+                        operationName: "Send logistics payment");
+
+                        Console.WriteLine($"Logistics payment made: Tx#{logisticsPaymentResult.transaction_number} for pickup request #{pickupResult.PickupRequestId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Logistics payment failed: {ex.Message}");
+
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"logistics pickup requested (ID: {pickupResult.PickupRequestId}) but missing payment details");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Failed to create logistics pickup request: {pickupResult.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error with logistics pickup request: {ex.Message}");
+        }
 
         var simTime = _clock.GetCurrentSimulationTime();
 
