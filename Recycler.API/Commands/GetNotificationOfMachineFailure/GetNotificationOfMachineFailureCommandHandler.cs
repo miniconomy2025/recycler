@@ -7,8 +7,6 @@ namespace RecyclerApi.Handlers
 {
     public class GetNotificationOfMachineFailureCommandHandler(IGenericRepository<ReceivedMachineDto> machinesRepository) : IRequestHandler<GetNotificationOfMachineFailureCommand>
     {
-        private static int _nextCompanyId = 1; 
-
         public async Task Handle(GetNotificationOfMachineFailureCommand request, CancellationToken cancellationToken)
         {
             if (request.MachineName == "recycling_machine")
