@@ -3,22 +3,22 @@ using Recycler.API.Services;
 
 namespace Recycler.API;
 
-public class GetOrderByOrderNumberHandler(
+public class GetOrderByOrderIdHandler(
     IGenericRepository<Order> orderRepository,
     IGenericRepository<OrderStatus> orderStatusRepository,
     IGenericRepository<OrderItem> orderItemRepository,
     ISimulationClock simulationClock,
     IGenericRepository<RawMaterial> rawMaterialRepository,
     ICommercialBankService commercialBankService) 
-    : IRequestHandler<GetOrderByOrderNumberQuery, OrderDto>
+    : IRequestHandler<GetOrderByIdQuery, OrderDto>
 {
-    public async Task<OrderDto> Handle(GetOrderByOrderNumberQuery request, CancellationToken cancellationToken)
+    public async Task<OrderDto> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
-        var order = (await orderRepository.GetByColumnValueAsync("order_number", request.OrderNumber)).FirstOrDefault();
+        var order = await orderRepository.GetByIdAsync(request.Id);
 
         if (order is null)
         {
-            throw new Exception($"Order with order number {request.OrderNumber} does not exist");
+            throw new Exception($"Order with ID {request.Id} does not exist");
             // ToDo: Log instead of throw error
         }
 

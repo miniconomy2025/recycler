@@ -12,13 +12,15 @@ public class Startup(WebApplicationBuilder builder)
     private void SetupExternalApiClients()
     {
         var thoHUrl = builder.Configuration["thoHApiUrl"] ?? "http://localhost:8084";
+        var consumerLogisticsUrl = builder.Configuration["consumerLogistic"] ?? "http://localhost:8086";
 
-        builder.Services.AddHttpClient<ThohService>(client =>
+        builder.Services.AddHttpClient<ConsumerLogisticsService>(client =>
         {
-            client.BaseAddress = new Uri(thoHUrl);
+            client.BaseAddress = new Uri(consumerLogisticsUrl);
         });
 
-        builder.Services.AddScoped<ThohService>();
+        builder.Services.AddScoped<ConsumerLogisticsService>();
+        builder.Services.AddScoped<IRawMaterialService, RawMaterialService>();
         builder.Services.AddHostedService<ThohBackgroundService>();
     }
 }

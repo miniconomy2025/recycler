@@ -1,31 +1,37 @@
+using Recycler.API.Services;
 using Recycler.API.Utils;
 
 public class MakePaymentService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _config;
+    private readonly CommercialBankService _commercialBankService;
+    private readonly ISimulationClock _simulationClock;
 
-    public MakePaymentService(IHttpClientFactory httpClientFactory, IConfiguration config)
+    public MakePaymentService(IHttpClientFactory httpClientFactory, IConfiguration config, CommercialBankService commercialBankService, ISimulationClock simulationClock)
     {
         _httpClientFactory = httpClientFactory;
         _config = config;
+        _commercialBankService = commercialBankService;
+        _simulationClock = simulationClock;
     }
 
-    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, string toBankName, decimal amount, string description, string apiKey, CancellationToken cancellationToken = default)
+    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, decimal amount, string description, CancellationToken cancellationToken = default)
     {
         var httpClient = _httpClientFactory.CreateClient();
         var bankBaseUrl = _config["commercialBank"] ?? "";
         httpClient.BaseAddress = new Uri(bankBaseUrl);
 
         httpClient.DefaultRequestHeaders.Clear();
-        httpClient.DefaultRequestHeaders.Add("X-API-Key", apiKey);
+        var simTime = _simulationClock.GetCurrentSimulationTime();
 
-        var requestBody = new
+        var requestBody = new PaymentRequestDto
         {
-            to_account_number = toAccountNumber,
-            to_bank_name = toBankName,
-            amount,
-            description
+            amount = amount,
+            description = description,
+            from = _commercialBankService.AccountNumber,
+            to = toAccountNumber,
+            timestamp = ((DateTimeOffset)simTime).ToUnixTimeSeconds(),
         };
 
         var response = await RetryHelper.RetryAsync(
