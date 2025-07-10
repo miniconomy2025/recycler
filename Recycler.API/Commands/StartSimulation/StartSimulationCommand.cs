@@ -6,5 +6,5 @@ namespace Recycler.API.Commands.StartSimulation;
 public class StartSimulationCommand : IRequest<StartSimulationResponse>
 {
     [JsonPropertyName("epochStartTime")]
-    public long? EpochStartTime { get; set; } 
+    public long? EpochStartTime { get; set; }
 }
