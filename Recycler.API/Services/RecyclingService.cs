@@ -122,7 +122,7 @@ namespace Recycler.API.Services
                 var operationalMachinesSql = @"
                     SELECT COUNT(*) 
                     FROM Machines 
-                    WHERE isOperational = true";
+                    WHERE is_operational = true";
                 
                 var operationalMachinesCount = await connection.QuerySingleAsync<int>(operationalMachinesSql, transaction: transaction);
                 
