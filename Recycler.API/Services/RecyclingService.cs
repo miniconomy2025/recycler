@@ -52,7 +52,6 @@ namespace Recycler.API.Services
                 throw new ArgumentException($"Phone with ID {phoneId} not found");
 
 
-            // Get recycling ratios
             var ratiosSql = @"
                     SELECT 
                     ppr.phone_part_quantity_per_phone as PartsPerPhone,
@@ -100,7 +99,6 @@ namespace Recycler.API.Services
 
             try
             {
-                 // check if we have any recycling machines
                 var totalMachinesSql = @"
                     SELECT COUNT(*) 
                     FROM Machines";
@@ -118,7 +116,6 @@ namespace Recycler.API.Services
                     };
                 }
                 
-                // Check how many operational machines we have
                 var operationalMachinesSql = @"
                     SELECT COUNT(*) 
                     FROM Machines 
@@ -137,10 +134,8 @@ namespace Recycler.API.Services
                     };
                 }
                 
-                // Calculate maximum processing capacity based on operational machines
                 var maxProcessingCapacity = operationalMachinesCount * MACHINE_PRODUCTION_RATE;
                 
-                // check available phones
                 var phoneInventoriesSql = @"
                     SELECT 
                         pi.phone_id as PhoneId,
@@ -151,7 +146,7 @@ namespace Recycler.API.Services
                     JOIN phone p ON pi.phone_id = p.id
                     JOIN phonebrand pb ON p.phone_brand_id = pb.id
                     WHERE pi.quantity > 0
-                    ORDER BY pi.quantity DESC"; // Process phones with higher quantities first
+                    ORDER BY pi.quantity DESC"; 
 
                 var phoneInventories = await connection.QueryAsync<PhoneInventoryDto>(phoneInventoriesSql, transaction: transaction);
 
@@ -176,7 +171,6 @@ namespace Recycler.API.Services
 
                 foreach (var phoneInventory in phoneInventories)
                 {
-                    // Stop if we've reached our machine capacity
                     if (totalProcessedCount >= phonesToProcess)
                         break;
 
@@ -185,7 +179,6 @@ namespace Recycler.API.Services
                     var model = phoneInventory.Model;
                     var brandName = phoneInventory.BrandName;
 
-                    // Calculate how many of this phone model we can process
                     var remainingCapacity = phonesToProcess - totalProcessedCount;
                     var quantityToProcess = Math.Min(availableQuantity, remainingCapacity);
                     var quantityRemaining = availableQuantity - quantityToProcess;
@@ -194,7 +187,6 @@ namespace Recycler.API.Services
                     {
                         var estimate = await EstimateRecyclingYieldAsync(phoneId, quantityToProcess);
 
-                        // Update phone inventory reduce by the amount we're processing
                         var updatePhoneInventorySql = @"
                             UPDATE phoneinventory 
                             SET quantity = @QuantityRemaining 

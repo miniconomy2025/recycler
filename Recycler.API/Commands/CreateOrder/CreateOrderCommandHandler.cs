@@ -22,10 +22,6 @@ public class CreateOrderCommandHandler(
         
         var company = (await companyRepository.GetByColumnValueAsync("name", request.CompanyName)).FirstOrDefault()
             ?? throw new Exception($"Company with name {request.CompanyName} does not exist");
-            // ToDo: Log instead of throw error
-            
-        // ToDo: enums for companies?
-
         
         var availableRawMaterials = (await rawMaterialService.GetAvailableRawMaterialsAndQuantity()).ToList();
 
@@ -59,7 +55,6 @@ public class CreateOrderCommandHandler(
                     };
                     
                     stockToReserve.Add(materialInventory, availableOrderItem);
-                    // availableOrderItems.Add(availableOrderItem);
                 }
 
             }

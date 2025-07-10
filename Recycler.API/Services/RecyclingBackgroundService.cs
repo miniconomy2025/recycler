@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Recycler.API.Services.Interfaces;
+namespace Recycler.API.Services;
 
 public class RecyclingBackgroundService : BackgroundService
     {
@@ -29,7 +29,6 @@ public class RecyclingBackgroundService : BackgroundService
                 {
                     _logger.LogInformation("Running recycling process at: {time}", DateTimeOffset.Now);
 
-                    // Create a scope to get the recycling service
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var recyclingService = scope.ServiceProvider.GetRequiredService<IRecyclingService>();
@@ -56,7 +55,6 @@ public class RecyclingBackgroundService : BackgroundService
                     _logger.LogError(ex, "An error occurred while running the recycling process.");
                 }
 
-                // Wait for 2 minutes before the next run
                 await Task.Delay(_interval, stoppingToken);
             }
 

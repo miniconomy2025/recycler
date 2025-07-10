@@ -19,7 +19,6 @@ public class GetOrderByOrderNumberHandler(
         if (order is null)
         {
             throw new Exception($"Order with order number {request.OrderNumber} does not exist");
-            // ToDo: Log instead of throw error
         }
 
         var orderStatus = await orderStatusRepository.GetByIdAsync(order.OrderStatusId);

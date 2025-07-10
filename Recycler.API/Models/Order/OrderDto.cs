@@ -8,7 +8,7 @@ public class OrderDto(ISimulationClock simulationClock, ICommercialBankService c
     
     public Guid OrderNumber { get; set; }
 
-    public OrderStatus OrderStatus { get; set; }
+    public OrderStatus? OrderStatus { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -16,9 +16,9 @@ public class OrderDto(ISimulationClock simulationClock, ICommercialBankService c
     
     public DateTime OrderExpiresAt { get; set; }
 
-    public IEnumerable<OrderItemDto> OrderItems { get; set; }
+    public IEnumerable<OrderItemDto> OrderItems { get; set; } = [];
     
-    public string AccountNumber { get; set; }
+    public string AccountNumber { get; set; } = "";
 
     public OrderDto MapDbObjects(Order? order, OrderStatus? orderStatus, IEnumerable<OrderItemDto> orderItems)
     {

@@ -5,13 +5,11 @@ using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Recycler.API;
 using Recycler.API.Services;
-using Recycler.API.Services.Interfaces;
 
 CultureInfo.CurrentCulture = new CultureInfo("en-ZA") { NumberFormat = { NumberDecimalSeparator = "." } };
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel with mTLS
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.ConfigureHttpsDefaults(httpsOptions =>
@@ -19,9 +17,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
         httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
 
-        // Load your custom root CA
         var rootCa = X509CertificateLoader.LoadCertificateFromFile("certs/root-ca.der");
-        // var rootCa = new X509Certificate2("certs/root-ca.der");
 
         httpsOptions.ClientCertificateValidation = (cert, chain, errors) =>
         {
@@ -123,7 +119,7 @@ AddTransient<HttpClientHandler>(sp =>
     };
 });
 
-builder.Services.AddHttpClient(); // <- generic client now inherits from that handler
+builder.Services.AddHttpClient(); 
 
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
