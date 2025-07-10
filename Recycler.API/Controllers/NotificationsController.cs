@@ -1,20 +1,23 @@
 using System.Text.Json;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Recycler.API.Models.ExternalApiRequests;
 using Recycler.API.Services;
+using RecyclerApi.Commands;
 
 namespace Recycler.API.Controllers;
 
 [ApiController]
-[Route("recycler/notifyme")]
-public class PhonesNotificationsController(
+public class NotificationsController(
     ThohService thohPhoneService,
     ConsumerLogisticsService consumerLogisticsService,
     ILogService logService,
-    MakePaymentService paymentService
+    MakePaymentService paymentService,
+    IMediator mediator
 ) : ControllerBase
 {
     [HttpPost]
+    [Route("recycler/notifyme")]
     public async Task<IActionResult> NotifyAvailablePhones()
     {
         Console.WriteLine("THoH has notified Recycler about available phones.");
@@ -80,5 +83,16 @@ public class PhonesNotificationsController(
             message = "Completed delivery orders for all phones.",
             results
         });
+    }
+    
+    [HttpPost]
+    [Route("/machine-failure")]
+    public async Task<IActionResult> GetNotificationOfMachineFailure([FromBody] GetNotificationOfMachineFailureCommand command)
+    {
+        await mediator.Send(command);
+           
+        await logService.CreateLog(HttpContext, command, Ok());
+            
+        return Ok();
     }
 }
