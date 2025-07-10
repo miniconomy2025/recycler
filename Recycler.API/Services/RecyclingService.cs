@@ -18,6 +18,7 @@ namespace Recycler.API.Services
     public class RecyclingService : IRecyclingService
     {
         private readonly IConfiguration _configuration;
+        private const int MACHINE_PRODUCTION_RATE = 20; 
 
         public RecyclingService(IConfiguration configuration)
         {
@@ -124,6 +125,58 @@ namespace Recycler.API.Services
                 }
 
                 var totalPhonesCount = phoneInventories.Sum(pi => pi.AvailableQuantity);
+                
+                var requiredMachines = (int)Math.Ceiling((double)totalPhonesCount / MACHINE_PRODUCTION_RATE);
+                
+                var totalMachinesSql = @"
+                    SELECT COUNT(*) 
+                    FROM Machines";
+                
+                var totalMachinesCount = await connection.QuerySingleAsync<int>(totalMachinesSql, transaction: transaction);
+                
+                if (totalMachinesCount == 0)
+                {
+                    return new RecyclingResult
+                    {
+                        Success = false,
+                        Message = "No recycling machines available. Please acquire recycling machines to process phones.",
+                        PhonesProcessed = 0,
+                        TotalMaterialsRecycled = 0
+                    };
+                }
+                
+                var operationalMachinesSql = @"
+                    SELECT COUNT(*) 
+                    FROM Machines 
+                    WHERE isOperational = true";
+                
+                var operationalMachinesCount = await connection.QuerySingleAsync<int>(operationalMachinesSql, transaction: transaction);
+                
+                if (operationalMachinesCount == 0)
+                {
+                    return new RecyclingResult
+                    {
+                        Success = false,
+                        Message = $"You have {totalMachinesCount} recycling machine(s), but none are operational. Please repair your machines before recycling.",
+                        PhonesProcessed = 0,
+                        TotalMaterialsRecycled = 0
+                    };
+                }
+                
+                if (operationalMachinesCount < requiredMachines)
+                {
+                    // Process only what we can with available operational machines
+                    var processablePhones = operationalMachinesCount * MACHINE_PRODUCTION_RATE;
+                    return new RecyclingResult
+                    {
+                        Success = false,
+                        Message = $"Insufficient operational recycling machines. You have {operationalMachinesCount} operational machine(s) which can process {processablePhones} phones, but you have {totalPhonesCount} phones to recycle. Need {requiredMachines - operationalMachinesCount} more operational machine(s).",
+                        PhonesProcessed = 0,
+                        TotalMaterialsRecycled = 0
+                    };
+                }
+
+
                 var allRecycledMaterials = new List<RecycledMaterialResult>();
                 var processedPhoneModels = new List<string>();
 
