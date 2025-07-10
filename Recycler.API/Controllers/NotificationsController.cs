@@ -8,7 +8,8 @@ namespace Recycler.API.Controllers;
 [Route("recycler/notifyme")]
 public class PhonesNotificationsController(
     ThohService thohPhoneService,
-    ConsumerLogisticsService consumerLogisticsService
+    ConsumerLogisticsService consumerLogisticsService,
+    ILogService logService
 ) : ControllerBase
 {
     [HttpPost]
@@ -55,6 +56,11 @@ public class PhonesNotificationsController(
                 });
             }
         }
+        await logService.CreateLog(HttpContext, "", Ok(new
+        {
+            message = "Completed delivery orders for all phones.",
+            results
+        }));
 
         return Ok(new
         {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RecyclerApi.Commands;
 using RecyclerApi.Models;
 using System.Threading.Tasks;
+using Recycler.API.Services;
 
 namespace RecyclerApi.Controllers
 {
@@ -11,10 +12,12 @@ namespace RecyclerApi.Controllers
     public class LogisticsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ILogService _logService;
 
-        public LogisticsController(IMediator mediator)
+        public LogisticsController(IMediator mediator, ILogService logService)
         {
             _mediator = mediator;
+            _logService = logService;
         }
 
         [HttpPost] 
@@ -38,10 +41,14 @@ namespace RecyclerApi.Controllers
                 };
 
                 var result = await _mediator.Send(command);
+                
+                await _logService.CreateLog(HttpContext, requestDto, Ok(result));
+                
                 return Ok(result); 
             }
             catch (Exception ex)
             {
+                await _logService.CreateLog(HttpContext, requestDto, StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message }));
               
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message });
             }

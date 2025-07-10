@@ -2,12 +2,13 @@ using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Recycler.API.Models;
+using Recycler.API.Services;
 
 namespace Recycler.API;
 
 [ApiController]
 [Route("[controller]")]
-public class OrdersController(IMediator mediator, IGenericRepository<Order> orderRepository) : ControllerBase
+public class OrdersController(IMediator mediator, ILogService logService) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(GenericResponse<OrderDto>), StatusCodes.Status200OK)]
@@ -16,7 +17,12 @@ public class OrdersController(IMediator mediator, IGenericRepository<Order> orde
     {
         // get Supplier's Details compare against order number
         var query = new GetOrderByIdQuery(id);
-        return Ok(await mediator.Send(query));
+        
+        var response =  Ok(await mediator.Send(query));
+        
+        await logService.CreateLog(HttpContext, id, response);
+
+        return response;
     }
 
     [HttpGet]
@@ -25,9 +31,13 @@ public class OrdersController(IMediator mediator, IGenericRepository<Order> orde
     [Route("{orderNumber}")]
     public async Task<IActionResult> GetOrderByOrderNumber(Guid orderNumber)
     {
-        // get Supplier's Details compare against order number
         var query = new GetOrderByOrderNumberQuery(orderNumber);
-        return Ok(await mediator.Send(query));
+        
+        var response =  Ok(await mediator.Send(query));
+        
+        await logService.CreateLog(HttpContext, orderNumber, response);
+        
+        return response;
     }
     
     
@@ -36,7 +46,11 @@ public class OrdersController(IMediator mediator, IGenericRepository<Order> orde
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
     {
-        return Ok(await mediator.Send(request));
+        var response =  Ok(await mediator.Send(request));
+        
+        await logService.CreateLog(HttpContext, request, response);
+        
+        return response;
     }
 
 }
