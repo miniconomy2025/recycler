@@ -1,33 +1,34 @@
 using MediatR;
 using RecyclerApi.Commands;
 using RecyclerApi.Models;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using Recycler.API.Utils;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace RecyclerApi.Handlers
 {
     public class PlaceMachineOrderCommandHandler : IRequestHandler<PlaceMachineOrderCommand, MachineOrderResponseDto>
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
-        public PlaceMachineOrderCommandHandler(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public PlaceMachineOrderCommandHandler(HttpClient httpClient, IConfiguration configuration)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClient = httpClient;
             _configuration = configuration;
         }
 
         public async Task<MachineOrderResponseDto> Handle(PlaceMachineOrderCommand request, CancellationToken cancellationToken)
         {
-            var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "";
-            var httpClient = _httpClientFactory.CreateClient();
-            httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
+            var thoHApiBaseUrl = _configuration["ThoHApi:BaseUrl"] ?? "http://localhost:5001";
+            _httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
 
             var machineOrderRequest = new MachineOrderRequestDto
             {
-                machineName = request.machineName,
-                quantity = request.quantity,
+                MachineId = request.MachineId
             };
 
             var jsonContent = JsonSerializer.Serialize(machineOrderRequest);
@@ -35,30 +36,31 @@ namespace RecyclerApi.Handlers
 
             try
             {
-                var response = await RetryHelper.RetryAsync(
-                    () => httpClient.PostAsync("/simulation/purchase-machine", httpContent, cancellationToken),
-                    operationName: "Place machine order");
+                var response = await _httpClient.PostAsync("/machines/orders", httpContent, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseBody = await response.Content.ReadAsStringAsync();
-
-                    var thoHResponse = JsonSerializer.Deserialize<MachineOrderResponseDto>(
-                        responseBody,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                    );
-
-                    if (thoHResponse != null)
+                    var responseMessage = "Machine order placed successfully.";
+                    if (response.Content != null)
                     {
-                        if (string.IsNullOrEmpty(thoHResponse.Message))
+                        var responseBody = await response.Content.ReadAsStringAsync();
+                        if (!string.IsNullOrEmpty(responseBody))
                         {
-                            thoHResponse.Message = "Machine order placed successfully.";
+                            try
+                            {
+                                var thoHResponse = JsonSerializer.Deserialize<MachineOrderResponseDto>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                if (thoHResponse != null && !string.IsNullOrEmpty(thoHResponse.Message))
+                                {
+                                    responseMessage = thoHResponse.Message;
+                                }
+                            }
+                            catch (JsonException)
+                            {
+                                
+                            }
                         }
-
-                        return thoHResponse;
                     }
-
-                    throw new ApplicationException("Machine order succeeded but response was empty or invalid.");
+                    return new MachineOrderResponseDto { Message = responseMessage };
                 }
                 else
                 {
