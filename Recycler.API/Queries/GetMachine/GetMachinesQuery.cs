@@ -1,8 +1,8 @@
 using MediatR;
-using RecyclerApi.Models;
+using Recycler.API.Models;
 using System.Collections.Generic;
 
-namespace RecyclerApi.Queries
+namespace Recycler.API.Queries
 {
     public class GetMachinesQuery : IRequest<List<ReceivedMachineDto>>
     {

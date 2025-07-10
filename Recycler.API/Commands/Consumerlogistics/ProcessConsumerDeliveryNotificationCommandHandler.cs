@@ -1,6 +1,6 @@
 using MediatR;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Dapper;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API.Handlers
 {
     public class ProcessConsumerDeliveryNotificationCommandHandler : IRequestHandler<ProcessConsumerDeliveryNotificationCommand, ConsumerLogisticsDeliveryResponseDto> // Updated return type
     {

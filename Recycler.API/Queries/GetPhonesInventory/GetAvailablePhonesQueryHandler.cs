@@ -8,10 +8,12 @@ using Npgsql;
 using Microsoft.Extensions.Configuration;
 using Recycler.API.Dto;
 using Recycler.API.Services;
+using Recycler.API.Queries;
+using Recycler.API.Models;
 
-namespace Recycler.API.Queries.GetAvailablePhones
+namespace Recycler.API.Queries.GetPhonesInventory
 {
-    public class GetAvailablePhonesQueryHandler : IRequestHandler<GetAvailablePhonesQuery, List<PhoneInventoryDto>>
+    public class GetAvailablePhonesQueryHandler : IRequestHandler<GetPhonesInventoryQuery, List<PhoneInventoryItemDto>>
     {
         private readonly IConfiguration _configuration;
         private readonly IRecyclingService _recyclingService;
@@ -22,7 +24,7 @@ namespace Recycler.API.Queries.GetAvailablePhones
             _recyclingService = recyclingService;
         }
 
-        public async Task<List<PhoneInventoryDto>> Handle(GetAvailablePhonesQuery request, CancellationToken cancellationToken)
+        public async Task<List<PhoneInventoryItemDto>> Handle(GetPhonesInventoryQuery request, CancellationToken cancellationToken)
         {
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await connection.OpenAsync(cancellationToken);
@@ -40,25 +42,19 @@ namespace Recycler.API.Queries.GetAvailablePhones
 
             var parameters = new DynamicParameters();
 
-            if (request.PhoneBrandId.HasValue)
+            if (!string.IsNullOrEmpty(request.PhoneBrandId))
             {
                 sql += " AND p.phone_brand_id = @PhoneBrandId";
-                parameters.Add("PhoneBrandId", request.PhoneBrandId.Value);
+                parameters.Add("PhoneBrandId", request.PhoneBrandId);
             }
 
-            if (!string.IsNullOrEmpty(request.ModelFilter))
-            {
-                sql += " AND p.model ILIKE @ModelFilter";
-                parameters.Add("ModelFilter", $"%{request.ModelFilter}%");
-            }
 
-            var phoneInventories = await connection.QueryAsync<PhoneInventoryDto>(sql, parameters);
+            var phoneInventories = await connection.QueryAsync<PhoneInventoryItemDto>(sql, parameters);
 
-            var result = new List<PhoneInventoryDto>();
+            var result = new List<PhoneInventoryItemDto>();
             foreach (var inventory in phoneInventories)
             {
                 var estimate = await _recyclingService.EstimateRecyclingYieldAsync(inventory.PhoneId, inventory.AvailableQuantity);
-                inventory.EstimatedYield = estimate;
                 result.Add(inventory);
             }
 
@@ -66,3 +62,4 @@ namespace Recycler.API.Queries.GetAvailablePhones
         }
     }
 }
+

@@ -1,5 +1,5 @@
 using MediatR;
-using RecyclerApi.Commands;
+using Recycler.API.Commands;
 using Recycler.API.Utils;
 
 namespace Recycler.API.Commands.StartSimulation;

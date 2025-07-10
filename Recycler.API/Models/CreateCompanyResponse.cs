@@ -1,4 +1,4 @@
-namespace RecyclerApi.Models
+namespace Recycler.API.Models
 {
     public class CreateCompanyResponse
     {

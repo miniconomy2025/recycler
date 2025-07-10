@@ -1,13 +1,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
-using RecyclerApi.Queries;
+using Recycler.API.Commands;
+using Recycler.API.Models;
+using Recycler.API.Queries;
+using Recycler.API.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System; 
 
-namespace RecyclerApi.Controllers
+namespace Recycler.API.Controllers
 {
     [ApiController]
     
@@ -37,7 +38,7 @@ namespace RecyclerApi.Controllers
                 var command = new ProcessLogisticsCommand
                 {
                     Id = requestDto.Id,
-                    Type = request.Type,
+                    Type = requestDto.Type,
                     Items = requestDto.Items
                 };
 
@@ -50,22 +51,12 @@ namespace RecyclerApi.Controllers
             }
         }
 
-        
-        [HttpGet("/logistics")] 
-        [ProducesResponseType(typeof(List<LogisticsRecordDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetGeneralLogisticsRecords()
-        {
-            var query = new GetLogisticsRecordsQuery();
-            var result = await _mediator.Send(query);
-            return Ok(result);
-        }
-
        
         [HttpPost("consumer-deliveries")] 
         [ProducesResponseType(typeof(ConsumerLogisticsDeliveryResponseDto), StatusCodes.Status200OK)] 
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ProcessConsumerDeliveryNotification([FromBody] ConsumerLogisticsDeliveryNotificationRequestDto requestDto) // RENAMED
+        public async Task<IActionResult> ProcessConsumerDeliveryNotification([FromBody] ConsumerLogisticsDeliveryNotificationRequestDto requestDto) 
         {
             try
             {

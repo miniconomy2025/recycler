@@ -1,8 +1,8 @@
 using MediatR;
-using RecyclerApi.Models;
-using RecyclerApi.Commands;
+using Recycler.API.Models;
+using Recycler.API.Commands;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API.Handlers
 {
     public class CreateCompanyCommandHandler : IRequestHandler<CreateCompanyCommand, CreateCompanyResponse>
     {

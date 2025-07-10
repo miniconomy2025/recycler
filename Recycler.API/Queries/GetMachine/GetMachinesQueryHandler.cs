@@ -1,5 +1,5 @@
 using MediatR;
-using RecyclerApi.Models;
+using Recycler.API.Models;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Dapper;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API.Queries
 {
     public class GetMachinesQueryHandler : IRequestHandler<GetMachinesQuery, List<ReceivedMachineDto>>
     {
