@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Recycler.API.Models.ExternalApiRequests;
 using Recycler.API.Services;
@@ -8,7 +9,8 @@ namespace Recycler.API.Controllers;
 [Route("recycler/notifyme")]
 public class PhonesNotificationsController(
     ThohService thohPhoneService,
-    ConsumerLogisticsService consumerLogisticsService
+    ConsumerLogisticsService consumerLogisticsService,
+    MakePaymentService paymentService
 ) : ControllerBase
 {
     [HttpPost]
@@ -36,14 +38,19 @@ public class PhonesNotificationsController(
             try
             {
                 var response = await consumerLogisticsService.SendDeliveryOrderAsync(deliveryOrder);
-                var responseBody = await response.Content.ReadAsStringAsync();
+                var responseBodyText = await response.Content.ReadAsStringAsync();
+                var deliveryResponse = JsonSerializer.Deserialize<DeliveryOrderResponseDto>(responseBodyText);
 
-                results.Add(new
+                if (deliveryResponse == null)
                 {
-                    phone.ModelName,
-                    Status = "Success",
-                    Response = responseBody
-                });
+                    throw new Exception("Failed to parse delivery order response.");
+                }
+
+                var paymentResult = await paymentService.SendPaymentAsync(
+                    toAccountNumber: deliveryResponse.accountNumber,
+                    amount: decimal.Parse(deliveryResponse.amount),
+                    description: deliveryResponse.referenceNo
+                );
             }
             catch (Exception ex)
             {
@@ -55,6 +62,10 @@ public class PhonesNotificationsController(
                 });
             }
         }
+        results.Add(new
+        {
+            Status = "Success",
+        });
 
         return Ok(new
         {

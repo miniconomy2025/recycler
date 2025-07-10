@@ -16,7 +16,7 @@ public class MakePaymentService
         _simulationClock = simulationClock;
     }
 
-    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, string toBankName, decimal amount, string description, CancellationToken cancellationToken = default)
+    public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, decimal amount, string description, CancellationToken cancellationToken = default)
     {
         var httpClient = _httpClientFactory.CreateClient();
         var bankBaseUrl = _config["commercialBank"] ?? "";

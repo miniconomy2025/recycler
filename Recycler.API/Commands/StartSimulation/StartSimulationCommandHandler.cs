@@ -120,25 +120,26 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
             return new StartSimulationResponse { Status = "error", Message = "Missing THoH account number config" };
         }
 
-        if (orderNumber != null)
+        if (!string.IsNullOrEmpty(orderNumber))
         {
             try
             {
-                var payment = await RetryHelper.RetryAsync(
+                var paymentResult = await RetryHelper.RetryAsync(
                     () => _paymentService.SendPaymentAsync(
-                        toAccountNumber: thoHAccount,
-                        toBankName: "commercial-bank",
+                        toAccountNumber: thoHAccount!,
                         amount: totalCost,
-                        description: $"Order #{orderNumber}",
+                        description: orderNumber,
                         cancellationToken),
                     operationName: "Send machine payment");
-                Console.WriteLine($"Payment made: Tx#{payment.transaction_number}");
+
+                Console.WriteLine($"Payment made: Tx#{paymentResult.transaction_number}");
             }
             catch (Exception ex)
             {
                 return new StartSimulationResponse { Status = "error", Message = $"Machine payment failed: {ex.Message}" };
             }
         }
+
 
         var simTime = _clock.GetCurrentSimulationTime();
 
