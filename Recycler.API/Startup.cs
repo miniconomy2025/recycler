@@ -23,12 +23,25 @@ public class Startup(WebApplicationBuilder builder)
         builder.Services.AddHostedService<ThohBackgroundService>();
         
         var consumerLogisticsUrl = builder.Configuration["consumerLogistic"] ?? "http://localhost:8086";
+        var bankUrl = builder.Configuration["commercialBankUrl"] ?? "http://localhost:8085";
 
         builder.Services.AddHttpClient<ConsumerLogisticsService>(client =>
         {
             client.BaseAddress = new Uri(consumerLogisticsUrl);
         });
 
+        builder.Services.AddHttpClient<ThohService>(client =>
+        {
+            client.BaseAddress = new Uri(consumerLogisticsUrl);
+        });
+
+        builder.Services.AddHttpClient<CommercialBankService>(client =>
+        {
+            client.BaseAddress = new Uri(bankUrl);
+        });
+
+        builder.Services.AddScoped<CommercialBankService>();
+        builder.Services.AddScoped<ThohService>();
         builder.Services.AddScoped<ConsumerLogisticsService>();
     }
 }
