@@ -1,6 +1,6 @@
 using MediatR;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API
 {
     public class PlaceMachineOrderCommandHandler : IRequestHandler<PlaceMachineOrderCommand, MachineOrderResponseDto>
     {
@@ -28,7 +28,7 @@ namespace RecyclerApi.Handlers
 
             var machineOrderRequest = new MachineOrderRequestDto
             {
-                MachineId = request.MachineId
+                machineName = request.machineName
             };
 
             var jsonContent = JsonSerializer.Serialize(machineOrderRequest);

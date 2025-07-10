@@ -1,6 +1,6 @@
 using MediatR;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Dapper;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API.Handlers
 {
     public class ReceiveMachineCommandHandler : IRequestHandler<ReceiveMachineCommand, ReceivedMachineDto>
     {

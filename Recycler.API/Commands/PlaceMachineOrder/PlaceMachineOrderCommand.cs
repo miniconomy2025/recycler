@@ -1,10 +1,11 @@
 using MediatR;
-using RecyclerApi.Models;
+using Recycler.API.Models;
 
-namespace RecyclerApi.Commands
+namespace Recycler.API.Commands
 {
     public class PlaceMachineOrderCommand : IRequest<MachineOrderResponseDto>
     {
         public string? machineName { get; set; }
+        public int? quantity { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 using MediatR;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +11,7 @@ using Dapper;
 using System;
 using System.Text.Json;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API.ProcessLogistics
 {
     public class ProcessLogisticsCommandHandler : IRequestHandler<ProcessLogisticsCommand, LogisticsResponseDto>
     {

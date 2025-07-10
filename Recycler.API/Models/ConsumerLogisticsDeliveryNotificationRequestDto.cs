@@ -1,6 +1,6 @@
-namespace RecyclerApi.Models
+namespace Recycler.API.Models
 {
-    public class ConsumerLogisticsDropOffRequestDto
+    public class ConsumerLogisticsDeliveryNotificationRequestDto
     {
         public string Status { get; set; } 
         public string ModelName { get; set; }

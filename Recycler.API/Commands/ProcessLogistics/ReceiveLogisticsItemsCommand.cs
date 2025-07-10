@@ -1,9 +1,9 @@
 
 using MediatR;
 using Recycler.API.Models;
-using RecyclerApi.Models;
+using Recycler.API.Models;
 
-namespace RecyclerApi.Commands
+namespace Recycler.API.Commands
 {
      public class ReceiveLogisticsItemsCommand : IRequest<Unit> 
     {

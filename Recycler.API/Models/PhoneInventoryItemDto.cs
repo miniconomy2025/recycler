@@ -1,4 +1,6 @@
-namespace RecyclerApi.Models
+
+namespace Recycler.API.Models
+
 {
     public class PhoneInventoryItemDto
     {

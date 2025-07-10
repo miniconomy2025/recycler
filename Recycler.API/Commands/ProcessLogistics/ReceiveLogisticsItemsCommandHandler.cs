@@ -1,6 +1,6 @@
 using MediatR;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 using Microsoft.Extensions.Configuration; 
 using Npgsql; 
 using Dapper; 
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Recycler.API.Services;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API.Handlers
 {
     public class ReceiveLogisticsItemsCommandHandler : IRequestHandler<ReceiveLogisticsItemsCommand, Unit>
     {

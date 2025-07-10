@@ -1,6 +1,6 @@
 using MediatR;
 using Recycler.API.Services;
-using RecyclerApi.Commands;
+using Recycler.API.Commands;
 using Recycler.API.Utils;
 using Recycler.API.Commands.CreatePickupRequest;
 

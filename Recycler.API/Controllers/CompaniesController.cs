@@ -1,9 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 
-namespace RecyclerApi.Controllers
+namespace Recycler.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
