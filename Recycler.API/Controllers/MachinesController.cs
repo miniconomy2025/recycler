@@ -2,6 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using RecyclerApi.Commands;
 using RecyclerApi.Models;
+using RecyclerApi.Queries;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RecyclerApi.Controllers
@@ -16,7 +18,7 @@ namespace RecyclerApi.Controllers
         {
             _mediator = mediator;
         }
-        [HttpPost("receive")] 
+        [HttpPost("receive")]
         [ProducesResponseType(typeof(ReceivedMachineDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ReceiveMachine([FromBody] ReceiveMachineCommand command)
@@ -30,6 +32,15 @@ namespace RecyclerApi.Controllers
             {
                 return BadRequest(new { Message = ex.Message });
             }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(List<ReceivedMachineDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMachines()
+        {
+            var query = new GetMachinesQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
     }
 }
