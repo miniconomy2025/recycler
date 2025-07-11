@@ -36,10 +36,16 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
+        Console.WriteLine(request.EpochStartTime);
+        Console.WriteLine(request.EpochStartTime);
+        Console.WriteLine(request.EpochStartTime);
         DateTime? realStart = request.EpochStartTime.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(request.EpochStartTime.Value).UtcDateTime
             : null;
 
+        Console.WriteLine(realStart);
+        Console.WriteLine(realStart);
+        Console.WriteLine(realStart);
         _clock.Start(realStart);
 
         var notificationUrl = $"{_configuration["recyclerApi:baseUrl"]}{_configuration["recyclerApi:bankNotificationPath"]}";
