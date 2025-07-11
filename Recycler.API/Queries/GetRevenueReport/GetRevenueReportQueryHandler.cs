@@ -28,7 +28,7 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
                 o.created_at,
                 rm.name AS material_name,
                 oi.quantity_in_kg,
-                oi.price
+                oi.price_per_kg
             FROM Orders o
             JOIN Companies c ON o.company_id = c.id
             JOIN OrderStatus os ON o.order_status_id = os.id
