@@ -18,8 +18,8 @@ public class MakePaymentService
 
     public async Task<PaymentResult> SendPaymentAsync(string toAccountNumber, decimal amount, string description, CancellationToken cancellationToken = default)
     {
-        var httpClient = _httpClientFactory.CreateClient();
-        var bankBaseUrl = _config["commercialBank"] ?? "";
+        var httpClient = _httpClientFactory.CreateClient("test");
+        var bankBaseUrl = _config["commercialBankUrl"] ?? "";
         httpClient.BaseAddress = new Uri(bankBaseUrl);
 
         httpClient.DefaultRequestHeaders.Clear();
@@ -29,13 +29,11 @@ public class MakePaymentService
         {
             amount = amount,
             description = description,
-            from = _commercialBankService.AccountNumber,
-            to = toAccountNumber,
-            timestamp = ((DateTimeOffset)simTime).ToUnixTimeSeconds(),
+            to_account_number = toAccountNumber,
         };
 
         var response = await RetryHelper.RetryAsync(
-            () => httpClient.PostAsJsonAsync("/transaction", requestBody, cancellationToken),
+            () => httpClient.PostAsJsonAsync("/api/transactions", requestBody, cancellationToken),
             operationName: "Send payment");
         if (!response.IsSuccessStatusCode)
         {

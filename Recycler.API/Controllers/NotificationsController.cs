@@ -1,7 +1,9 @@
 using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Recycler.API.Models.ExternalApiRequests;
+using Recycler.API.Models.Thoh;
 using Recycler.API.Services;
 using RecyclerApi.Commands;
 
@@ -23,6 +25,16 @@ public class NotificationsController(
         Console.WriteLine("THoH has notified Recycler about available phones.");
 
         var phones = await thohPhoneService.GetAvailableRecycledPhonesAsync();
+        // var phones = new List<RecycledPhoneModelDto>();
+        // phones.Add(new RecycledPhoneModelDto
+        // {
+        //     ModelId = 5,
+        //     ModelName = "Cosmos_Z25_ultra",
+        //     Quantity = 93
+        // }
+        // );
+
+
 
         if (phones is null || phones.Count == 0)
         {
@@ -84,15 +96,15 @@ public class NotificationsController(
             results
         });
     }
-    
+
     [HttpPost]
     [Route("/machine-failure")]
     public async Task<IActionResult> GetNotificationOfMachineFailure([FromBody] GetNotificationOfMachineFailureCommand command)
     {
         await mediator.Send(command);
-           
+
         await logService.CreateLog(HttpContext, command, Ok());
-            
+
         return Ok();
     }
 }

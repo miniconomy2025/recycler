@@ -20,10 +20,10 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         ISimulationClock clock,
         IMediator mediator,
         IConfiguration configuration,
-        MakePaymentService paymentService, 
+        MakePaymentService paymentService,
         ICommercialBankService commercialBankService)
     {
-        _http = httpFactory.CreateClient();
+        _http = httpFactory.CreateClient("test");
         _clock = clock;
         _mediator = mediator;
         _configuration = configuration;
@@ -45,7 +45,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         var notificationUrl = $"{_configuration["recyclerApi:baseUrl"]}{_configuration["recyclerApi:bankNotificationPath"]}";
 
         var accountResponse = await RetryHelper.RetryAsync(
-            () => _http.PostAsJsonAsync("/account", new
+            () => _http.PostAsJsonAsync("/api/account", new
             {
                 notification_url = notificationUrl
             }, cancellationToken),
@@ -130,7 +130,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
                 return new StartSimulationResponse { Status = "error", Message = $"Machine payment failed: {ex.Message}" };
             }
         }
-        
+
         var simTime = _clock.GetCurrentSimulationTime();
 
         return new StartSimulationResponse
