@@ -71,7 +71,7 @@ namespace Recycler.API
 
                         foreach (var itemToPickup in request.Items)
                         {
-                            var materialLookupSql = "SELECT id FROM Material WHERE name ILIKE @ItemName;";
+                            var materialLookupSql = "SELECT id FROM RawMaterial WHERE name ILIKE @ItemName;";
                             var materialId = await connection.QueryFirstOrDefaultAsync<int?>(materialLookupSql, new { ItemName = itemToPickup.Name });
 
                             if (!materialId.HasValue)
