@@ -24,15 +24,15 @@ public class NotificationsController(
     {
         Console.WriteLine("THoH has notified Recycler about available phones.");
 
-        // var phones = await thohPhoneService.GetAvailableRecycledPhonesAsync();
-        var phones = new List<RecycledPhoneModelDto>();
-        phones.Add(new RecycledPhoneModelDto
-        {
-            ModelId = 5,
-            ModelName = "Cosmos_Z25_ultra",
-            Quantity = 93
-        }
-        );
+        var phones = await thohPhoneService.GetAvailableRecycledPhonesAsync();
+        // var phones = new List<RecycledPhoneModelDto>();
+        // phones.Add(new RecycledPhoneModelDto
+        // {
+        //     ModelId = 5,
+        //     ModelName = "Cosmos_Z25_ultra",
+        //     Quantity = 93
+        // }
+        // );
 
 
 
@@ -96,15 +96,15 @@ public class NotificationsController(
             results
         });
     }
-    
+
     [HttpPost]
     [Route("/machine-failure")]
     public async Task<IActionResult> GetNotificationOfMachineFailure([FromBody] GetNotificationOfMachineFailureCommand command)
     {
         await mediator.Send(command);
-           
+
         await logService.CreateLog(HttpContext, command, Ok());
-            
+
         return Ok();
     }
 }
