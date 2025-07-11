@@ -8,8 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Dapper;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Recycler.API.Handlers
+namespace Recycler.API
 {
     public class ReceiveMachineCommandHandler : IRequestHandler<ReceiveMachineCommand, ReceivedMachineDto>
     {
@@ -25,30 +28,19 @@ namespace Recycler.API.Handlers
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await connection.OpenAsync(cancellationToken);
 
-            var existingMachineSql = "SELECT id, machine_id, received_at, status FROM Machines WHERE machine_id = @MachineId;";
-            var existingMachine = await connection.QueryFirstOrDefaultAsync<ReceivedMachineDto>(existingMachineSql, new { MachineId = request.MachineId });
+            var insertSql = @"
+                INSERT INTO Machines (machine_id, received_at, is_operational)
+                VALUES (@MachineId, @ReceivedAt, @IsOperational)
+                RETURNING id, machine_id, received_at, is_operational;";
 
-            if (existingMachine != null)
+            var newMachine = await connection.QuerySingleAsync<ReceivedMachineDto>(insertSql, new
             {
-                Console.WriteLine($"Warning: Machine with ThoH ID {request.MachineId} already exists in Machines table (Recycler ID: {existingMachine.Id}). Not adding duplicate.");
-                return existingMachine;
-            }
-            else
-            {
-                var insertSql = @"
-                    INSERT INTO Machines (machine_id, received_at, status)
-                    VALUES (@MachineId, @ReceivedAt, @Status)
-                    RETURNING id, machine_id, received_at, status;";
+                MachineId = 4,
+                ReceivedAt = DateTime.UtcNow,
+                IsOperational = true
+            });
 
-                var newReceivedMachine = await connection.QuerySingleAsync<ReceivedMachineDto>(insertSql, new
-                {
-                    MachineId = request.MachineId,
-                    ReceivedAt = DateTime.UtcNow,
-                    Status = "Received"
-                });
-
-                return newReceivedMachine;
-            }
+            return newMachine;
         }
     }
 }

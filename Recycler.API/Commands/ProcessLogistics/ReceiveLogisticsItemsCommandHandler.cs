@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Recycler.API.Services;
 
-namespace Recycler.API.Handlers
+namespace Recycler.API
 {
     public class ReceiveLogisticsItemsCommandHandler : IRequestHandler<ReceiveLogisticsItemsCommand, Unit>
     {

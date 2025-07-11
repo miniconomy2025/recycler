@@ -5,6 +5,7 @@ namespace Recycler.API.Commands
 {
     public class ReceiveMachineCommand : IRequest<ReceivedMachineDto>
     {
-        public int MachineId { get; set; } 
+        public string ModelName { get; set; }
+        public int Quantity { get; set; }
     }
 }
