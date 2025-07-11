@@ -20,7 +20,7 @@ public class LogService(IGenericRepository<Log> logRepository) : GenericService<
         {
             RequestSource = httpContext == null
                 ? ""
-                : $"{httpContext.Request.Headers["Referer"].ToString()}",
+                : $"{httpContext.Connection.RemoteIpAddress}",
             RequestEndpoint = httpContext == null
                 ? ""
                 : $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{httpContext.Request.Path}{httpContext.Request.QueryString}",
