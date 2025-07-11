@@ -14,6 +14,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
     private readonly IConfiguration _configuration;
     private readonly MakePaymentService _paymentService;
     private readonly ICommercialBankService _commercialBankService;
+    private readonly IDatabaseResetService _resetService;
 
     public StartSimulationCommandHandler(
         IHttpClientFactory httpFactory,
@@ -21,7 +22,8 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         IMediator mediator,
         IConfiguration configuration,
         MakePaymentService paymentService,
-        ICommercialBankService commercialBankService)
+        ICommercialBankService commercialBankService,
+        IDatabaseResetService resetService)
     {
         _http = httpFactory.CreateClient("test");
         _clock = clock;
@@ -29,6 +31,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         _configuration = configuration;
         _paymentService = paymentService;
         _commercialBankService = commercialBankService;
+        _resetService = resetService;
 
         var bankUrl = _configuration["commercialBankUrl"] ?? "http://localhost:8085";
         _http.BaseAddress = new Uri(bankUrl);
@@ -36,16 +39,12 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
-        Console.WriteLine(request.EpochStartTime);
-        Console.WriteLine(request.EpochStartTime);
-        Console.WriteLine(request.EpochStartTime);
+        await _resetService.ResetAsync(cancellationToken);
+
         DateTime? realStart = request.EpochStartTime.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(request.EpochStartTime.Value).UtcDateTime
             : null;
 
-        Console.WriteLine(realStart);
-        Console.WriteLine(realStart);
-        Console.WriteLine(realStart);
         _clock.Start(realStart);
 
         var notificationUrl = $"{_configuration["recyclerApi:baseUrl"]}{_configuration["recyclerApi:bankNotificationPath"]}";
