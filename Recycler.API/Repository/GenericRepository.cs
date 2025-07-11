@@ -118,7 +118,7 @@ public class GenericRepository<T>: IGenericRepository<T> where T : class
             object columnValue = propertyInfo.GetValue(entity) ?? 
                 throw new ArgumentException($"Unable to update entity '{typeof(T).Name}' because '{propertyName}' value is null");
 
-            return $"{GetColumnNameFromProperty(propertyName)} = @{columnValue}";
+            return $"{GetColumnNameFromProperty(propertyName)} = {(propertyInfo.PropertyType == typeof(bool) ? "" : "@")}{columnValue}";
         }));
             
 

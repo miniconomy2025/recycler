@@ -14,12 +14,16 @@ public class LogService(IGenericRepository<Log> logRepository) : GenericService<
         return await logRepository.GetAllAsync();
     }
     
-    public async Task CreateLog(HttpContext httpContext, Object request, Object response)
+    public async Task CreateLog(HttpContext? httpContext, Object request, Object response)
     {
         await logRepository.CreateAsync(new Log()
         {
-            RequestSource = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}",
-            RequestEndpoint = $"{httpContext.Request.Path}{httpContext.Request.QueryString}",
+            RequestSource = httpContext == null
+                ? ""
+                : $"{httpContext.Request.Headers["Referer"].ToString()}",
+            RequestEndpoint = httpContext == null
+                ? ""
+                : $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{httpContext.Request.Path}{httpContext.Request.QueryString}",
             RequestBody = JsonSerializer.Serialize(request),
             Response = JsonSerializer.Serialize(response),
             Timestamp = DateTime.Now

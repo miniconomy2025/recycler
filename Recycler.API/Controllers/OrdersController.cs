@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +16,20 @@ public class OrdersController(IMediator mediator, ILogService logService) : Cont
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetOrderById([FromQuery] int id)
     {
-        var query = new GetOrderByIdQuery(id);
-        
-        var response =  Ok(await mediator.Send(query));
-        
-        await logService.CreateLog(HttpContext, id, response);
+        try
+        {
+            var query = new GetOrderByIdQuery(id);
+            
+            var response =  Ok(await mediator.Send(query));
+            
+            await logService.CreateLog(HttpContext, id, response);
 
-        return response;
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpGet]
@@ -30,13 +38,20 @@ public class OrdersController(IMediator mediator, ILogService logService) : Cont
     [Route("{orderNumber}")]
     public async Task<IActionResult> GetOrderByOrderNumber(Guid orderNumber)
     {
-        var query = new GetOrderByOrderNumberQuery(orderNumber);
+        try
+        {
+            var query = new GetOrderByOrderNumberQuery(orderNumber);
         
-        var response =  Ok(await mediator.Send(query));
-        
-        await logService.CreateLog(HttpContext, orderNumber, response);
-        
-        return response;
+            var response =  Ok(await mediator.Send(query));
+            
+            await logService.CreateLog(HttpContext, orderNumber, response);
+            
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
     
     
@@ -45,11 +60,18 @@ public class OrdersController(IMediator mediator, ILogService logService) : Cont
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
     {
-        var response =  Ok(await mediator.Send(request));
-        
-        await logService.CreateLog(HttpContext, request, response);
-        
-        return response;
+        try
+        {
+            var response = Ok(await mediator.Send(request));
+
+            await logService.CreateLog(HttpContext, request, response);
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 }
