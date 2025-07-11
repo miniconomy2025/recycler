@@ -43,6 +43,7 @@ builder.Services.AddSingleton<ISimulationClock, SimulationClock>();
 builder.Services.AddSingleton<ICommercialBankService, CommercialBankService>();
 builder.Services.AddScoped<IRecyclingService, RecyclingService>();
 builder.Services.AddHostedService<RecyclingBackgroundService>();
+builder.Services.AddScoped<IDatabaseResetService, DatabaseResetService>();
 
 builder.Services.AddOpenApi();
 
