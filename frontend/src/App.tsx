@@ -5,6 +5,7 @@ import { Layout } from './pages/Layout';
 import { Home } from './pages/Home';
 import { Revenue } from './pages/Revenue';
 import { Stock } from './pages/Stock';
+import Log from "./pages/Log";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path='/revenue' element={<Revenue />} />
           <Route path='/stock' element={<Stock />} />
+          <Route path='/log' element={<Log />} />
         </Route>
       </Routes>
     </BrowserRouter>

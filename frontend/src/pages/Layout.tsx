@@ -7,6 +7,7 @@ export const Layout = () => {
                 <Link to="/">Home</Link>
                 <Link to="/revenue">Revenue</Link>
                 <Link to="/stock">Stock</Link>
+                <Link to="/log">Logs</Link>
             </nav>
             <main>
                 <Outlet />
