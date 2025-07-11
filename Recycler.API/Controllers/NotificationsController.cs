@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Recycler.API.Models.ExternalApiRequests;
+using Recycler.API.Models.Thoh;
 using Recycler.API.Services;
 
 namespace Recycler.API.Controllers;
@@ -19,7 +21,17 @@ public class PhonesNotificationsController(
     {
         Console.WriteLine("THoH has notified Recycler about available phones.");
 
-        var phones = await thohPhoneService.GetAvailableRecycledPhonesAsync();
+        // var phones = await thohPhoneService.GetAvailableRecycledPhonesAsync();
+        var phones = new List<RecycledPhoneModelDto>();
+        phones.Add(new RecycledPhoneModelDto
+        {
+            ModelId = 5,
+            ModelName = "Cosmos_Z25_ultra",
+            Quantity = 93
+        }
+        );
+
+
 
         if (phones is null || phones.Count == 0)
         {
