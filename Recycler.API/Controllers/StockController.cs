@@ -28,19 +28,19 @@ public class StockController(IHttpClientFactory httpClientFactory, IMediator med
         //     mediaType: "application/json"
         // );
 
-        var temp = await _http.PostAsJsonAsync("https://consumer-logistics-api.projects.bbdgrad.com/api/pickups",
+        // var temp = await _http.PostAsJsonAsync("https://consumer-logistics-api.projects.bbdgrad.com/api/pickups",
 
-            new DeliveryOrderRequestDto
-            {
-                companyName = "Recycler",
-                quantity = 1,
-                recipient = "Recycler",
-                modelName = "Cosmos_Z25_ultra"
-            }
-        );
-        var result = temp.Content.ReadAsStringAsync();
+        //     new DeliveryOrderRequestDto
+        //     {
+        //         companyName = "Recycler",
+        //         quantity = 1,
+        //         recipient = "Recycler",
+        //         modelName = "Cosmos_Z25_ultra"
+        //     }
+        // );
+        // var result = temp.Content.ReadAsStringAsync();
         var query = new GetStockQuery();
-        // var result = await mediator.Send(query);
+        var result = await mediator.Send(query);
 
         await logService.CreateLog(HttpContext, "", Ok(result));
 
