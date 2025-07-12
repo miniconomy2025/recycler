@@ -249,6 +249,7 @@ namespace Recycler.API.Services
                         processedPhoneModels.Add($"{quantityToProcess}x {brandName} {model}");
                         totalProcessedCount += quantityToProcess;
                     }
+                    await transaction.CommitAsync();
                 }
 
                 var leftoverPhones = totalAvailablePhones - totalProcessedCount;

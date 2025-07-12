@@ -4,26 +4,30 @@ using Recycler.API.Models.Thoh;
 
 namespace Recycler.API.Services;
 
-public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialService rawMaterialService)
+public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialService rawMaterialService, IConfiguration config)
 {
-    private HttpClient httpClient { get; } = httpClientFactory.CreateClient(nameof(ThohService));
-        
+    private readonly IConfiguration _config = config;
+    private HttpClient httpClient { get; } = httpClientFactory.CreateClient("test");
+
+
     public async Task GetAndUpdateRawMaterialPrice()
     {
+        httpClient.BaseAddress = new Uri(_config["thoHApiUrl"] ?? "");
         var thohRawMaterialList = await GetRawMaterialPriceFromThoh();
-        
+
         if (thohRawMaterialList is not null)
         {
-            
+
             var updateRawMaterials = ConvertToUpdateRawMaterial(thohRawMaterialList.Items, 20);
-            
+
             await rawMaterialService.UpdateRawMaterialPrice(updateRawMaterials);
-            
+
         }
     }
-    
+
     public async Task<List<RecycledPhoneModelDto>> GetAvailableRecycledPhonesAsync()
     {
+        httpClient.BaseAddress = new Uri(_config["thoHApiUrl"] ?? "");
         try
         {
             var response = await httpClient.GetAsync("recycled-phones");
@@ -53,6 +57,7 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
 
     private async Task<ThohRawMaterialListResponseDto?> GetRawMaterialPriceFromThoh()
     {
+        httpClient.BaseAddress = new Uri(_config["thoHApiUrl"] ?? "");
         try
         {
             HttpResponseMessage response = await httpClient.GetAsync("simulation/raw-materials");
@@ -103,7 +108,7 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
                 PricePerKg = thohRawMaterial.PricePerKg * discountMultiplier
             });
         }
-        
+
         return updateRawMaterials;
     }
 

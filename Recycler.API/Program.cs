@@ -43,6 +43,7 @@ builder.Services.AddSingleton<ISimulationClock, SimulationClock>();
 builder.Services.AddSingleton<ICommercialBankService, CommercialBankService>();
 builder.Services.AddScoped<IRecyclingService, RecyclingService>();
 builder.Services.AddHostedService<RecyclingBackgroundService>();
+builder.Services.AddScoped<IDatabaseResetService, DatabaseResetService>();
 
 builder.Services.AddOpenApi();
 
@@ -107,19 +108,24 @@ builder.Services
         };
     });
 
-builder.Services.
-AddTransient<HttpClientHandler>(sp =>
-{
-    var cert = new X509Certificate2("certs/client.pfx", "1234",
-        X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+// builder.Services.
+// AddTransient<HttpClientHandler>(sp =>
+// {
 
-    return new HttpClientHandler
+// });
+
+builder.Services.AddHttpClient("test")
+    .ConfigurePrimaryHttpMessageHandler(() =>
     {
-        ClientCertificates = { cert }
-    };
-});
+        var cert = new X509Certificate2("certs/client.pfx", "1234",
+    X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.Exportable);
 
-builder.Services.AddHttpClient(); 
+        return new HttpClientHandler
+        {
+            ClientCertificates = { cert },
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+    });
 
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -127,22 +133,18 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 new Startup(builder).ConfigureApplication();
 
 var app = builder.Build();
+app.MapOpenApi();
 
-if (app.Environment.IsDevelopment())
+app.UseSwaggerUI(options =>
 {
-    app.MapOpenApi();
+    options.SwaggerEndpoint("/openapi/v1.json", "MiniConomy Recycler API v1");
+});
 
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "MiniConomy Recycler API v1");
-    });
-
-    app.Use(async (context, next) =>
-    {
-        Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
-        await next();
-    });
-}
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseCors();

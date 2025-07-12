@@ -14,21 +14,24 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
     private readonly IConfiguration _configuration;
     private readonly MakePaymentService _paymentService;
     private readonly ICommercialBankService _commercialBankService;
+    private readonly IDatabaseResetService _resetService;
 
     public StartSimulationCommandHandler(
         IHttpClientFactory httpFactory,
         ISimulationClock clock,
         IMediator mediator,
         IConfiguration configuration,
-        MakePaymentService paymentService, 
-        ICommercialBankService commercialBankService)
+        MakePaymentService paymentService,
+        ICommercialBankService commercialBankService,
+        IDatabaseResetService resetService)
     {
-        _http = httpFactory.CreateClient();
+        _http = httpFactory.CreateClient("test");
         _clock = clock;
         _mediator = mediator;
         _configuration = configuration;
         _paymentService = paymentService;
         _commercialBankService = commercialBankService;
+        _resetService = resetService;
 
         var bankUrl = _configuration["commercialBankUrl"] ?? "http://localhost:8085";
         _http.BaseAddress = new Uri(bankUrl);
@@ -36,6 +39,8 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
+        await _resetService.ResetAsync(cancellationToken);
+
         DateTime? realStart = request.EpochStartTime.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(request.EpochStartTime.Value).UtcDateTime
             : null;
@@ -45,7 +50,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         var notificationUrl = $"{_configuration["recyclerApi:baseUrl"]}{_configuration["recyclerApi:bankNotificationPath"]}";
 
         var accountResponse = await RetryHelper.RetryAsync(
-            () => _http.PostAsJsonAsync("/account", new
+            () => _http.PostAsJsonAsync("/api/account", new
             {
                 notification_url = notificationUrl
             }, cancellationToken),
@@ -129,70 +134,6 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
             {
                 return new StartSimulationResponse { Status = "error", Message = $"Machine payment failed: {ex.Message}" };
             }
-        }
-        
-        try
-        {
-            var recyclerCompany = "recycler";
-            var thoHCompany = "thoh";
-
-            var pickupCommand = new CreatePickupRequestCommand
-            {
-                originalExternalOrder = orderNumber ?? "",
-                originCompany = thoHCompany,
-                destinationCompany = recyclerCompany,
-                items = new List<PickupItem>
-                    {
-                        new PickupItem
-                        {
-                            itemName = "recycling_machine",
-                            quantity = 2,
-                        }
-                    }
-            };
-
-            var pickupResult = await RetryHelper.RetryAsync(
-                () => _mediator.Send(pickupCommand, cancellationToken),
-                operationName: "Create logistics pickup request");
-
-            if (pickupResult.Success)
-            {
-                Console.WriteLine($"Logistics pickup request created: ID #{pickupResult.PickupRequestId}, Cost: {pickupResult.Cost}");
-
-
-                if (!string.IsNullOrEmpty(pickupResult.BulkLogisticsBankAccount) && pickupResult.Cost > 0)
-                {
-                    try
-                    {
-                        var logisticsPaymentResult = await RetryHelper.RetryAsync(
-                        () => _paymentService.SendPaymentAsync(
-                            toAccountNumber: pickupResult.BulkLogisticsBankAccount!,
-                            amount: (decimal)pickupResult.Cost,
-                            description: pickupResult.PickupRequestId.ToString() ?? "",
-                            cancellationToken),
-                        operationName: "Send logistics payment");
-
-                        Console.WriteLine($"Logistics payment made: Tx#{logisticsPaymentResult.transaction_number} for pickup request #{pickupResult.PickupRequestId}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Logistics payment failed: {ex.Message}");
-
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"logistics pickup requested (ID: {pickupResult.PickupRequestId}) but missing payment details");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Failed to create logistics pickup request: {pickupResult.Message}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error with logistics pickup request: {ex.Message}");
         }
 
         var simTime = _clock.GetCurrentSimulationTime();

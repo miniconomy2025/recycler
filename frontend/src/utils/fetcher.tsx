@@ -1,6 +1,6 @@
 import { FetcherOptions } from '../types'; 
 
-const BASE_URL = 'https://recycler.projects.bbdgrad.com/internal'; 
+const BASE_URL = 'https://recycler-api.projects.bbdgrad.com/internal';
 
 export async function fetcher<T>(url: string, options?: FetcherOptions): Promise<T> {
   try {
