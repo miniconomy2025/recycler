@@ -2,7 +2,7 @@
 export type JsonBody = Record<string, unknown>; // Exported
 
 export type FetcherOptions = Omit<RequestInit, 'body'> & { // Exported
-  body?: JsonBody | BodyInit | null;
+  body?: BodyInit | null;
 };
 
 // Type for Company Revenue data
