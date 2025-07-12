@@ -4,13 +4,13 @@ using Recycler.API.Models;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Dapper;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace Recycler.API
 {
-    public class ProcessConsumerDeliveryNotificationCommandHandler : IRequestHandler<ProcessConsumerDeliveryNotificationCommand, ConsumerLogisticsDeliveryResponseDto> 
+    public class ProcessConsumerDeliveryNotificationCommandHandler : IRequestHandler<ProcessConsumerDeliveryNotificationCommand, ConsumerLogisticsDeliveryResponseDto>
     {
         private readonly IConfiguration _configuration;
 
@@ -21,7 +21,15 @@ namespace Recycler.API
 
         public async Task<ConsumerLogisticsDeliveryResponseDto> Handle(ProcessConsumerDeliveryNotificationCommand request, CancellationToken cancellationToken)
         {
-            if (request.Status.Equals("success", StringComparison.OrdinalIgnoreCase))
+            var response = new ConsumerLogisticsDeliveryResponseDto();
+
+            if (!request.Status.Equals("success", StringComparison.OrdinalIgnoreCase))
+            {
+                response.Message = "Delivery not processed";
+                return response;
+            }
+
+            try
             {
                 await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
                 await connection.OpenAsync(cancellationToken);
@@ -29,46 +37,29 @@ namespace Recycler.API
                 var phoneLookupSql = "SELECT id FROM Phone WHERE model ILIKE @ModelName;";
                 var phoneId = await connection.QueryFirstOrDefaultAsync<int?>(phoneLookupSql, new { ModelName = request.ModelName });
 
-                if (phoneId.HasValue)
+                if (!phoneId.HasValue)
                 {
-                    var upsertPhoneInventorySql = @"
-                        INSERT INTO PhoneInventory (phone_id, quantity)
-                        VALUES (@PhoneId, @Quantity)
-                        ON CONFLICT (phone_id) DO UPDATE
-                        SET quantity = PhoneInventory.quantity + @Quantity;
-                    ";
-                    await connection.ExecuteAsync(upsertPhoneInventorySql, new { PhoneId = phoneId.Value, Quantity = request.Quantity });
+                    response.Message = $"Phone model '{request.ModelName}' not found";
+                    return response;
+                }
 
-                   
-                    return new ConsumerLogisticsDeliveryResponseDto
-                    {
-                        ReferenceNo = Guid.NewGuid(), 
-                        Amount = 0.00M, 
-                        AccountNumber = "N/A" 
-                    };
-                }
-                else
-                {
-                    Console.WriteLine($"Warning: Consumer delivery notification received for unknown phone model: {request.ModelName}. Quantity: {request.Quantity}");
-                  
-                    return new ConsumerLogisticsDeliveryResponseDto
-                    {
-                        ReferenceNo = Guid.NewGuid(),
-                        Amount = 0.00M,
-                        AccountNumber = "N/A"
-                    };
-                }
+                var upsertSql = @"
+                    INSERT INTO PhoneInventory (phone_id, quantity)
+                    VALUES (@PhoneId, @Quantity)
+                    ON CONFLICT (phone_id) DO UPDATE
+                    SET quantity = PhoneInventory.quantity + @Quantity;
+                ";
+
+                await connection.ExecuteAsync(upsertSql, new { PhoneId = phoneId.Value, Quantity = request.Quantity });
+
+                response.Message = "Phones received";
+                return response;
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine($"Info: Consumer delivery notification received with non-success status: {request.Status} for {request.ModelName}. Inventory not updated.");
-                
-                return new ConsumerLogisticsDeliveryResponseDto
-                {
-                    ReferenceNo = Guid.NewGuid(),
-                    Amount = 0.00M,
-                    AccountNumber = "N/A"
-                };
+                Console.WriteLine($"Error: {ex.Message}");
+                response.Message = "An error occurred while processing the delivery";
+                return response;
             }
         }
     }
