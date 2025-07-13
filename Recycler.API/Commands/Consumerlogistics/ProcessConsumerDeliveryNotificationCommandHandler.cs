@@ -23,7 +23,7 @@ namespace Recycler.API
         {
             var response = new ConsumerLogisticsDeliveryResponseDto();
 
-            if (!request.Status.Equals("success", StringComparison.OrdinalIgnoreCase))
+            if (!request.Status.Equals("delivered", StringComparison.OrdinalIgnoreCase))
             {
                 response.Message = "Delivery not processed";
                 return response;
@@ -34,7 +34,7 @@ namespace Recycler.API
                 await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
                 await connection.OpenAsync(cancellationToken);
 
-                var phoneLookupSql = "SELECT id FROM Phone WHERE model ILIKE @ModelName;";
+                var phoneLookupSql = "SELECT id FROM Phone WHERE model LIKE @ModelName;";
                 var phoneId = await connection.QueryFirstOrDefaultAsync<int?>(phoneLookupSql, new { ModelName = request.ModelName });
 
                 if (!phoneId.HasValue)

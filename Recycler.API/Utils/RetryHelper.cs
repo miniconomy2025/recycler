@@ -12,12 +12,13 @@ namespace Recycler.API.Utils
             {
                 try
                 {
+                    Console.WriteLine($"Attempting {operationName}");
                     return await action();
                 }
                 catch (Exception ex) when (attempt < maxAttempts)
                 {
                     Console.WriteLine($"Retry {attempt}/{maxAttempts} failed for {operationName ?? "operation"}: {ex.Message}");
-                    await Task.Delay(initialDelayMs * Math.Max(attempt, 10)); 
+                    await Task.Delay(initialDelayMs * Math.Max(attempt, 10));
                 }
             }
 
