@@ -39,7 +39,21 @@ public class BankNotificationController : ControllerBase
                 return Ok();
             }
 
-            if (!Guid.TryParse(notification.description, out Guid orderNumber))
+            Guid orderNumber;
+
+            if (Guid.TryParse(notification.description, out orderNumber))
+            {
+                // ✅ Already a valid GUID — use as is
+            }
+            else if (int.TryParse(notification.description, out int orderInt))
+            {
+                // ✅ Convert int to GUID deterministically (e.g., hash it into a GUID)
+                // You can use a namespace-based UUID approach (e.g., MD5 or SHA1)
+                // But for simple use cases, here's one method:
+
+                orderNumber = (await _orderRepository.GetByColumnValueAsync("id", orderInt)).FirstOrDefault().OrderNumber;
+            }
+            else
             {
                 _logger.LogError("Invalid order number format in payment description: {desc}", notification.description);
                 return BadRequest("Invalid order number format");
@@ -60,19 +74,19 @@ public class BankNotificationController : ControllerBase
             }
 
             order.OrderStatusId = approvedStatus.Id;
-            await _orderRepository.UpdateAsync(order,  ["OrderStatusId"]);
+            await _orderRepository.UpdateAsync(order, ["OrderStatusId"]);
 
             _logger.LogInformation("Order {orderId} marked as Approved due to payment", order.Id);
-            
-            
+
+
             await _logService.CreateLog(HttpContext, notification, Ok());
-            
-            return  Ok();
+
+            return Ok();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process payment notification");
-            
+
             await _logService.CreateLog(HttpContext, notification, StatusCode(500, "Internal error processing payment"));
 
             return StatusCode(500, "Internal error processing payment");

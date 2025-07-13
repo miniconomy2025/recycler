@@ -25,7 +25,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
     {
         await _resetService.ResetAsync(cancellationToken);
         DateTime? realStart = request.EpochStartTime.HasValue
-            ? DateTimeOffset.FromUnixTimeSeconds(request.EpochStartTime.Value).UtcDateTime
+            ? DateTimeOffset.FromUnixTimeMilliseconds(request.EpochStartTime.Value).UtcDateTime
             : null;
 
         _clock.Start(realStart);

@@ -21,7 +21,7 @@ public class LoanService
         for (int attempt = 0; attempt < 2; attempt++)
         {
             var response = await RetryHelper.RetryAsync(
-                () => _http.PostAsJsonAsync("/loan", new { amount = loanAmount }, cancellationToken),
+                () => _http.PostAsJsonAsync("/api/loan", new { amount = loanAmount }, cancellationToken),
                 operationName: $"Loan attempt {attempt + 1}");
 
             loanData = await response.Content.ReadFromJsonAsync<LoanResponse>(cancellationToken: cancellationToken);

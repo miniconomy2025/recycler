@@ -19,6 +19,13 @@ public class BankAccountService
             () => _http.PostAsJsonAsync("/api/account", new { notification_url = notificationUrl }, cancellationToken),
             operationName: "Create bank account");
 
+        if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            response = await RetryHelper.RetryAsync(
+            () => _http.GetAsync("/api/account/me", cancellationToken),
+            operationName: "Check bank account");
+        }
+
         var data = await response.Content.ReadFromJsonAsync<AccountResponse>(cancellationToken: cancellationToken);
         return data?.account_number;
     }

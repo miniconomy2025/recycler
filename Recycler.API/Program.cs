@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Recycler.API;
 using Recycler.API.Services;
+using Recycler.API.Utils;
 
 CultureInfo.CurrentCulture = new CultureInfo("en-ZA") { NumberFormat = { NumberDecimalSeparator = "." } };
 
@@ -114,8 +115,10 @@ builder.Services
         };
     });
 
+builder.Services.AddTransient<HttpLoggingHandler>();
 
 builder.Services.AddHttpClient("test")
+    .AddHttpMessageHandler<HttpLoggingHandler>()
     .ConfigurePrimaryHttpMessageHandler(() =>
     {
         var cert = new X509Certificate2("certs/client.pfx", "1234",

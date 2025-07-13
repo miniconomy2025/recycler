@@ -25,30 +25,39 @@ namespace Recycler.API.Handlers
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await connection.OpenAsync(cancellationToken);
 
-            var existingMachineSql = "SELECT id, machine_id, received_at, status FROM Machines WHERE machine_id = @MachineId;";
-            var existingMachine = await connection.QueryFirstOrDefaultAsync<ReceivedMachineDto>(existingMachineSql, new { MachineId = request.MachineId });
+            // var existingMachineSql = "SELECT id, machine_id, received_at, is_operational FROM Machines WHERE machine_id = @MachineId;";
+            // var existingMachine = await connection.QueryFirstOrDefaultAsync<ReceivedMachineDto>(existingMachineSql, new { MachineId = request.ModelName });
 
-            if (existingMachine != null)
-            {
-                Console.WriteLine($"Warning: Machine with ThoH ID {request.MachineId} already exists in Machines table (Recycler ID: {existingMachine.Id}). Not adding duplicate.");
-                return existingMachine;
-            }
-            else
-            {
-                var insertSql = @"
-                    INSERT INTO Machines (machine_id, received_at, status)
+            // if (existingMachine != null)
+            // {
+            //     Console.WriteLine($"Warning: Machine with ThoH ID {request.ModelName} already exists in Machines table (Recycler ID: {existingMachine.Id}). Not adding duplicate.");
+            //     return existingMachine;
+            // }
+            // else
+            // {
+            var insertSql = @"
+                    INSERT INTO Machines (machine_id, received_at, is_operational)
                     VALUES (@MachineId, @ReceivedAt, @Status)
-                    RETURNING id, machine_id, received_at, status;";
+                    RETURNING id, machine_id, received_at, is_operational;";
+            for (int i = 0; i <= request.Quantity; i++)
+            {
 
                 var newReceivedMachine = await connection.QuerySingleAsync<ReceivedMachineDto>(insertSql, new
                 {
-                    MachineId = request.MachineId,
+                    MachineId = 1,
                     ReceivedAt = DateTime.UtcNow,
-                    Status = "Received"
+                    Status = true
                 });
-
-                return newReceivedMachine;
             }
+
+            return new ReceivedMachineDto
+            {
+                Id = 1,
+                IsOperational = true,
+                MachineId = 1,
+                ReceivedAt = DateTime.UtcNow
+            };
+            // }
         }
     }
 }
