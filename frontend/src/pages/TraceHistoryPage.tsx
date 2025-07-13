@@ -7,7 +7,7 @@ export const TraceHistoryPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+   useEffect(() => {
     const fetchTraceHistory = async () => {
       setLoading(true);
       setError(null);
@@ -57,43 +57,31 @@ export const TraceHistoryPage: React.FC = () => {
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Trace History</h2>
       <p className="text-gray-600 mb-4">View the complete trace history of recycled materials.</p>
       
-      <div className="space-y-6">
+      <div className="space-y-4">
         {traceHistory.map((event, index) => (
-          <div key={index} className="border border-blue-200 rounded-lg overflow-hidden">
-            {/* Formatted trace history display */}
-            <div className="p-4 bg-blue-50">
-              <h3 className="font-semibold text-blue-800 text-lg mb-3">Batch ID: {event.id}</h3>
-              <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                <li><strong>Phone Type:</strong> {event.phoneType}</li>
-                <li><strong>Received:</strong> {event.receivedDate}</li>
-                <li><strong>Processed:</strong> {event.processedDate}</li>
-                <li><strong>Materials Extracted:</strong> {event.materialsExtracted.join(', ')}</li>
-                <li><strong>Destination:</strong> {event.destination}</li>
-              </ul>
-            </div>
+          <div key={index} className="p-4 bg-blue-50 rounded-lg border border-blue-200 shadow-sm">
+            <p className="font-semibold text-blue-800 mb-3">Batch ID: {event.id}</p>
             
-            {/* Raw log data display */}
             {event.rawData && (
-              <div className="p-4 bg-gray-50 border-t border-blue-200">
-                <h4 className="font-semibold text-gray-800 mb-3">Raw Log Data:</h4>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
+              <div className="space-y-2 text-sm text-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p><strong className="text-gray-700">ID:</strong> <span className="text-gray-600">{event.rawData.id}</span></p>
-                    <p><strong className="text-gray-700">Request Source:</strong> <span className="text-gray-600 break-all">{event.rawData.requestSource}</span></p>
-                    <p><strong className="text-gray-700">Request Endpoint:</strong> <span className="text-gray-600 break-all">{event.rawData.requestEndpoint}</span></p>
-                    <p><strong className="text-gray-700">Timestamp:</strong> <span className="text-gray-600">{new Date(event.rawData.timestamp).toLocaleString()}</span></p>
+                    <p><strong>ID:</strong> {event.rawData.id}</p>
+                    <p><strong>Request Source:</strong> "{event.rawData.requestSource}"</p>
+                    <p><strong>Request Endpoint:</strong> "{event.rawData.requestEndpoint}"</p>
+                    <p><strong>Timestamp:</strong> "{event.rawData.timestamp}"</p>
                   </div>
-                  <div>
-                    <div className="mb-3">
-                      <p className="font-semibold text-gray-700 mb-1">Request Body:</p>
-                      <div className="bg-white p-2 rounded border text-xs font-mono max-h-20 overflow-y-auto">
+                  <div className="space-y-2">
+                    <div>
+                      <p><strong>Request Body:</strong></p>
+                      <div className="bg-white p-2 rounded border text-xs font-mono max-h-20 overflow-y-auto break-all">
                         {event.rawData.requestBody}
                       </div>
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-700 mb-1">Response:</p>
-                      <div className="bg-white p-2 rounded border text-xs font-mono max-h-20 overflow-y-auto">
-                        {typeof event.rawData.response === 'string' ? event.rawData.response : JSON.stringify(event.rawData.response, null, 2)}
+                      <p><strong>Response:</strong></p>
+                      <div className="bg-white p-2 rounded border text-xs font-mono max-h-20 overflow-y-auto break-all">
+                        {event.rawData.response}
                       </div>
                     </div>
                   </div>

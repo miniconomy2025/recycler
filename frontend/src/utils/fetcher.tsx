@@ -173,6 +173,7 @@ function transformToRevenue(data: any): any {
   return data;
 }
 
+
 /**
  * Transform logs to trace history format
  */
@@ -182,7 +183,7 @@ function transformToTraceHistory(data: any): any {
       id: `#LOG-${log.id || index}`,
       phoneType: extractPhoneTypeFromLog(log),
       receivedDate: formatDate(log.timestamp),
-      processedDate: formatDate(log.timestamp), 
+      processedDate: formatDate(log.timestamp), // Using same timestamp, adjust as needed
       materialsExtracted: extractMaterialsFromLog(log),
       destination: extractDestinationFromLog(log)
     }));
