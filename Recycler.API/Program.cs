@@ -45,6 +45,11 @@ builder.Services.AddSingleton<ICommercialBankService, CommercialBankService>();
 builder.Services.AddScoped<IRecyclingService, RecyclingService>();
 builder.Services.AddHostedService<RecyclingBackgroundService>();
 builder.Services.AddScoped<IDatabaseResetService, DatabaseResetService>();
+builder.Services.AddScoped<SimulationBootstrapService>();
+builder.Services.AddScoped<SimulationBootstrapService>();
+builder.Services.AddScoped<BankAccountService>();
+builder.Services.AddScoped<LoanService>();
+builder.Services.AddScoped<MachineMarketService>();
 
 builder.Services.AddOpenApi();
 
