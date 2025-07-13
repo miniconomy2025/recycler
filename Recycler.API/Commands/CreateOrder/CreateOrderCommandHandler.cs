@@ -17,11 +17,36 @@ public class CreateOrderCommandHandler(
 {
     public async Task<GenericResponse<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
+        foreach (var item in request.OrderItems)
+        {
+            if (item.QuantityInKg % 1000 != 0)
+            {
+                return new GenericResponse<OrderDto>(simulationClock)
+                {
+                    Data = new OrderDto(simulationClock, commercialBankService),
+                    IsSuccess = false,
+                    Message = "Can only order raw materials in multiples of 1000 kg.",
+                    TimeStamp = simulationClock.GetCurrentSimulationTime()
+                };
+            }
+        }
+        
         var unavailableRawMaterials = new List<string>();
         var stockToReserve = new Dictionary<MaterialInventory, OrderItemDto>();
-        
-        var company = (await companyRepository.GetByColumnValueAsync("name", request.CompanyName)).FirstOrDefault()
-            ?? throw new Exception($"Company with name {request.CompanyName} does not exist");
+
+        var company = (await companyRepository.GetByColumnValueAsync("name", request.CompanyName)).FirstOrDefault();
+
+        if (company == null)
+        {
+            return new GenericResponse<OrderDto>(simulationClock)
+            {
+                Data = new OrderDto(simulationClock, commercialBankService),
+                IsSuccess = false,
+                Message = $"Company with name {request.CompanyName} does not exist\n" +
+                          $"Possible companies are ${string.Join(", ", (await companyRepository.GetAllAsync()).Select(x => x.Name))}",
+                TimeStamp = simulationClock.GetCurrentSimulationTime()
+            };
+        }
         
         var availableRawMaterials = (await rawMaterialService.GetAvailableRawMaterialsAndQuantity()).ToList();
 
@@ -38,10 +63,22 @@ public class CreateOrderCommandHandler(
             {
                 var rawMaterial = (await rawMaterialService.GetByColumnValueAsync("name", orderItem.RawMaterialName))
                     .FirstOrDefault();
+
+                if (rawMaterial == null)
+                {
+                    return new GenericResponse<OrderDto>(simulationClock)
+                    {
+                        Data = new OrderDto(simulationClock, commercialBankService),
+                        IsSuccess = false,
+                        Message = $"Raw material with name {rawMaterial} does not exist.\n" +
+                                  $"Possible options are: ${string.Join(",", (await rawMaterialService.GetAllAsync()).Select(x => x.Name))}",
+                        TimeStamp = simulationClock.GetCurrentSimulationTime()
+                    };
+                }
+                
                 var materialInventory = await materialInventoryRepository.GetByIdAsync(rawMaterial.Id);
 
-                if (rawMaterial == null ||
-                    materialInventory.AvailableQuantityInKg < orderItem.QuantityInKg)
+                if (materialInventory!.AvailableQuantityInKg < orderItem.QuantityInKg)
                 {
                     unavailableRawMaterials.Add(orderItem.RawMaterialName);
                 }
@@ -68,7 +105,7 @@ public class CreateOrderCommandHandler(
         if (unavailableRawMaterials.Any())
         {
             orderSuccess = false;
-            orderMessage = $"Unavailable Raw Materials: {string.Join(", ", unavailableRawMaterials)}";
+            orderMessage = $"We don't have sufficient stock for these raw materials: {string.Join(", ", unavailableRawMaterials)}";
         }
         else
         {
