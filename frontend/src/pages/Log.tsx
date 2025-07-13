@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,14 +7,23 @@ import {
 } from '@tanstack/react-table';
 import {fetcher} from "../utils/fetcher";
 
+type LogEntry = {
+  id: number;
+  requestSource: string;
+  requestEndpoint: string;
+  requestBody: string;
+  response: string;
+  timestamp: string;
+};
+
 const LogTable = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const BASE_URL = 'https://recycler.projects.bbdgrad.com/internal';
 
   // Fetch data from your API
   useEffect(() => {
-    fetcher('/log')
+    fetcher<LogEntry[]>('/log')
       .then(response => {
         console.log('response', response);
         setData(response);

@@ -6,7 +6,7 @@ using Recycler.API.Queries.GetLogs;
 namespace Recycler.API;
 
 [ApiController]
-[Route("internal/[controller]")]
+[Route("internal/log")]
 [EnableCors("InternalApiCors")]
 public class LogController(IMediator mediator, IGenericRepository<Order> orderRepository) : ControllerBase
 {

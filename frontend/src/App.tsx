@@ -5,7 +5,6 @@ import { HomePage } from './pages/HomePage';
 import { RevenuePage } from './pages/RevenuePage';
 import { StockPage } from './pages/StockPage';
 import { PhonesPage } from './pages/PhonesPage';
-import { MaterialOrdersPage } from './pages/MaterialOrdersPage';
 import { TraceHistoryPage } from './pages/TraceHistoryPage';
 
 export const App: React.FC = () => {
@@ -21,8 +20,6 @@ export const App: React.FC = () => {
         return <StockPage />;
       case 'phones':
         return <PhonesPage />;
-      case 'material-orders':
-        return <MaterialOrdersPage />;
       case 'trace-history':
         return <TraceHistoryPage />;
       default:

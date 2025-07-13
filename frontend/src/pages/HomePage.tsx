@@ -50,7 +50,6 @@ export const HomePage: React.FC = () => {
     <section id="dashboard-content" className="content-section">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card title="Total Orders" value={dashboardData?.totalOrders || 0} icon="📦" bgColor="bg-blue-600" />
-        <Card title="Completed Orders" value={dashboardData?.completedOrders || 0} icon="✅" bgColor="bg-green-600" />
         <Card title="Materials Ready" value={dashboardData?.materialsReadyKg || 0} unit="kg" icon="🏭" bgColor="bg-purple-600" />
         <Card title="Pending Orders" value={dashboardData?.pendingOrders || 0} icon="🚚" bgColor="bg-orange-600" />
       </div>

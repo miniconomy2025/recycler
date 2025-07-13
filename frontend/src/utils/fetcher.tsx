@@ -1,45 +1,33 @@
-// --- src/utils/fetcher.ts ---
 
 import { FetcherOptions } from "../types";
 
-/**
- * A generic fetcher utility for making API requests to your existing C# backend.
- * @param url The endpoint to fetch from.
- * @param options Optional FetcherOptions for the request.
- * @returns A Promise that resolves with the parsed JSON data.
- * @throws An error if the network request fails or the response is not OK.
- */
 export async function fetcher<T>(url: string, options?: FetcherOptions): Promise<T> {
   try {
-    // Get base URL from environment variable or default to local C# API
-    const baseURL = process.env.REACT_APP_API_URL || 'https://localhost:443'; // Changed to HTTP
-    
-    // Map your frontend endpoints to your existing C# controller endpoints
+
+    const baseURL = process.env.REACT_APP_API_URL || 'https://localhost:443'; 
+
     const endpointMapping: Record<string, string> = {
-      '/dashboard': '/internal/stock', // Use development endpoint
+      '/dashboard': '/internal/stock', 
       '/stock': '/internal/stock',
       '/phones': '/internal/stock',
       '/phone-inventory': '/internal/stock',
-      '/material-orders': '/api/materials',
-      '/revenue/company-orders': '/api/revenue',
+      '/company-orders': '/internal/revenue/company-orders',
       '/company-revenue': '/api/revenue',
-      '/machines': '/api/machines',
+      '/log': '/internal/log',
     };
 
     const mappedEndpoint = endpointMapping[url] || url;
     const fullUrl = `${baseURL}${mappedEndpoint}`;
 
-    console.log(`Fetching from: ${fullUrl}`); // Debug log
-    console.log(`Environment REACT_APP_API_URL: ${process.env.REACT_APP_API_URL}`); // Debug log
-    console.log(`Original endpoint: ${url}, Mapped to: ${mappedEndpoint}`); // Debug log
+    console.log(`Fetching from: ${fullUrl}`); 
+    console.log(`Environment REACT_APP_API_URL: ${process.env.REACT_APP_API_URL}`); 
+    console.log(`Original endpoint: ${url}, Mapped to: ${mappedEndpoint}`); 
 
-    // Prepare the request body
     let requestBody: BodyInit | null = null;
     if (options?.body) {
       if (typeof options.body === 'string' || options.body instanceof FormData || options.body instanceof ArrayBuffer) {
         requestBody = options.body;
       } else {
-        // Convert JsonBody to string
         requestBody = JSON.stringify(options.body);
       }
     }
@@ -66,18 +54,18 @@ export async function fetcher<T>(url: string, options?: FetcherOptions): Promise
 
     const data = await response.json();
     
-    // Transform data based on endpoint to match your frontend expectations
+
     return transformData(url, data) as T;
 
   } catch (error) {
     console.error('Fetcher error:', error);
     
-    // If network error (API not available), provide helpful error message
+   
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Unable to connect to the API. Please ensure the backend server is running.');
     }
     
-    throw error; // Re-throw to be caught by the component
+    throw error; 
   }
 }
 
@@ -87,11 +75,11 @@ export async function fetcher<T>(url: string, options?: FetcherOptions): Promise
 function transformData(endpoint: string, data: any): any {
   switch (endpoint) {
     case '/dashboard':
-      // Transform stock data to dashboard format
+ 
       return transformStockToDashboard(data);
     
     case '/stock':
-      // Your stock data is already in the right format!
+
       return {
         rawMaterials: data.rawMaterials?.map((item: any) => ({
           name: item.name,
@@ -109,25 +97,22 @@ function transformData(endpoint: string, data: any): any {
     
     case '/phones':
     case '/phone-inventory':
-      // Extract only phones from stock data
+
       return data.phones?.map((item: any) => ({
         model: item.name,
         quantity: item.quantity,
         status: item.quantity > 50 ? 'In Stock' : item.quantity > 10 ? 'Low Stock' : 'Out of Stock'
       })) || [];
     
-    case '/material-orders':
-      // Transform materials data to material orders format
-      return transformToMaterialOrders(data);
-    
     case '/revenue/company-orders':
     case '/company-revenue':
-      // Transform revenue data to expected format
+
       return transformToRevenue(data);
     
-    case '/machines':
-      // Return machines data as-is or transform if needed
-      return data;
+    case '/log':
+
+      return transformToTraceHistory(data);
+    
     
     default:
       return data;
@@ -141,19 +126,18 @@ function transformStockToDashboard(data: any): any {
   const rawMaterials = data.rawMaterials || [];
   const phones = data.phones || [];
   
-  // Calculate dashboard metrics from your stock data
   const totalMaterialsKg = rawMaterials.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
   const totalPhones = phones.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
   
   return {
-    totalOrders: totalPhones, // Using phone count as total orders for now
-    completedOrders: Math.floor(totalPhones * 0.8), // 80% completed
+    totalOrders: totalPhones, 
+    completedOrders: Math.floor(totalPhones * 0.8), 
     materialsReadyKg: totalMaterialsKg,
-    pendingOrders: Math.floor(totalPhones * 0.2), // 20% pending
+    pendingOrders: Math.floor(totalPhones * 0.2), 
     materialInventory: rawMaterials.map((item: any) => ({
       material: item.name,
       currentKg: item.quantity,
-      totalKg: item.quantity + Math.floor(item.quantity * 0.3), // Add 30% for target
+      totalKg: item.quantity + Math.floor(item.quantity * 0.3), 
       barColor: getBarColor(item.quantity)
     }))
   };
@@ -187,6 +171,84 @@ function transformToRevenue(data: any): any {
   }
   
   return data;
+}
+
+/**
+ * Transform logs to trace history format
+ */
+function transformToTraceHistory(data: any): any {
+  if (Array.isArray(data)) {
+    return data.map((log: any, index: number) => ({
+      id: `#LOG-${log.id || index}`,
+      phoneType: extractPhoneTypeFromLog(log),
+      receivedDate: formatDate(log.timestamp),
+      processedDate: formatDate(log.timestamp), 
+      materialsExtracted: extractMaterialsFromLog(log),
+      destination: extractDestinationFromLog(log)
+    }));
+  }
+  
+  return data;
+}
+
+/**
+ * Helper function to extract phone type from log data
+ */
+function extractPhoneTypeFromLog(log: any): string {
+  try {
+
+    if (log.requestBody) {
+      const requestData = JSON.parse(log.requestBody);
+      if (requestData.phoneType || requestData.model) {
+        return requestData.phoneType || requestData.model;
+      }
+    }
+    
+    if (log.requestEndpoint && log.requestEndpoint.includes('phone')) {
+      return 'Phone Processing';
+    }
+    
+    return 'Mixed Processing';
+  } catch (error) {
+    return 'Unknown Processing';
+  }
+}
+
+/**
+ * Helper function to extract materials from log data
+ */
+function extractMaterialsFromLog(log: any): string[] {
+  try {
+    if (log.response) {
+      const responseData = JSON.parse(log.response);
+      if (responseData.rawMaterials) {
+        return responseData.rawMaterials.map((m: any) => m.name).slice(0, 3);
+      }
+      if (responseData.materials) {
+        return responseData.materials.slice(0, 3);
+      }
+    }
+    
+    return ['Copper', 'Plastic', 'Aluminum']; 
+  } catch (error) {
+    return ['Processing'];
+  }
+}
+
+/**
+ * Helper function to extract destination from log data
+ */
+function extractDestinationFromLog(log: any): string {
+  try {
+
+    if (log.requestSource) {
+      return `Processed by ${log.requestSource}`;
+    }
+    
+    return 'Material Processing Facility';
+  } catch (error) {
+    return 'Unknown Destination';
+  }
 }
 
 /**
@@ -228,4 +290,14 @@ function getStatusColor(status: string): string {
     default:
       return 'bg-gray-500';
   }
+}
+
+/**
+ * Helper function to format date strings
+ */
+function formatDate(dateString: string | number | Date): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 }

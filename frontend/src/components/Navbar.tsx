@@ -9,7 +9,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange }) => {
     { name: 'Revenue Page', target: 'revenue' },
     { name: 'Stock', target: 'stock' },
     { name: 'Phones', target: 'phones' },
-    { name: 'Material Orders', target: 'material-orders' },
     { name: 'Trace History', target: 'trace-history' },
   ];
 
@@ -21,10 +20,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange }) => {
           <div className="text-3xl text-green-700 mr-2">♻️</div>
           <a href="#" className="text-2xl font-bold text-green-700">Recycler System</a>
           <span className="ml-4 text-sm text-gray-500 hidden md:block">Recycling Management Platform</span>
-        </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-gray-600 text-sm">11/07/2025</span>
-          <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold"></div>
         </div>
       </div>
       {/* Secondary Navigation for Tabs */}

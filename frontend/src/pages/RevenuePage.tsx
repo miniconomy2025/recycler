@@ -11,7 +11,7 @@ export const RevenuePage: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetcher<CompanyRevenue[]>('/revenue/company-orders')
+    fetcher<CompanyRevenue[]>('/company-orders')
       .then((res) => {
         // Grouping logic as provided by the user
         const totals: Record<string, number> = {};
