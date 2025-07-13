@@ -12,16 +12,11 @@ public class ConsumerLogisticsService(IHttpClientFactory clientFactory, IConfigu
 
     public async Task<HttpResponseMessage> SendDeliveryOrderAsync(DeliveryOrderRequestDto order)
     {
-        _client.BaseAddress = new Uri(_config["consumerLogistic"] ?? "");
-        // var content = new StringContent(
-        //     order,
-        //     Encoding.UTF8,
-        //     mediaType: "application/json"
-        // );
+        var endpoint = new Uri($"{_config["consumerLogistic"]?.TrimEnd('/')}/api/pickups");
 
         try
         {
-            var response = await _client.PostAsJsonAsync("api/pickups", order);
+            var response = await _client.PostAsJsonAsync(endpoint, order);
             Console.WriteLine(await response.Content.ReadAsStringAsync());
             response.EnsureSuccessStatusCode();
             return response;
