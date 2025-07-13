@@ -54,12 +54,19 @@ export interface MaterialOrderItem { // Exported
   statusColor: string;
 }
 
-// Type for Trace History
-export interface TraceHistoryEvent { // Exported
+export interface TraceHistoryEvent {
   id: string;
   phoneType: string;
   receivedDate: string;
   processedDate: string;
   materialsExtracted: string[];
   destination: string;
+  rawData?: {
+    id: string;
+    requestSource: string;
+    requestEndpoint: string;
+    timestamp: string | number;
+    requestBody: string;
+    response: any;
+  };
 }
