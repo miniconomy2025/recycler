@@ -25,17 +25,6 @@ public class NotificationsController(
         Console.WriteLine("THoH has notified Recycler about available phones.");
 
         var phones = await thohPhoneService.GetAvailableRecycledPhonesAsync();
-        // var phones = new List<RecycledPhoneModelDto>();
-        // phones.Add(new RecycledPhoneModelDto
-        // {
-        //     ModelId = 5,
-        //     ModelName = "Cosmos_Z25_ultra",
-        //     Quantity = 93
-        // }
-        // );
-
-
-
         if (phones is null || phones.Count == 0)
         {
             return BadRequest(new { message = "No recycled phones received from THoH." });

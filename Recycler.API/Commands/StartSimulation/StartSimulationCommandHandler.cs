@@ -14,17 +14,16 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
         IHttpClientFactory httpFactory,
         ISimulationClock clock,
         IDatabaseResetService resetService,
-        SimulationBootstrapService bootstrap) 
+        SimulationBootstrapService bootstrap)
     {
         _http = httpFactory.CreateClient("test");
         _clock = clock;
         _resetService = resetService;
-        _bootstrap = bootstrap; 
+        _bootstrap = bootstrap;
     }
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
         await _resetService.ResetAsync(cancellationToken);
-
         DateTime? realStart = request.EpochStartTime.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(request.EpochStartTime.Value).UtcDateTime
             : null;
