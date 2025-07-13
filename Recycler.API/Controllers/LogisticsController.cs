@@ -53,7 +53,13 @@ namespace Recycler.API.Controllers
             }
             catch (Exception ex)
             {
-                await _logService.CreateLog(HttpContext, requestDto, StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message }));
+                await _logService.CreateLog(HttpContext, 
+                    requestDto, StatusCode(StatusCodes.Status500InternalServerError, 
+                        new
+                        {
+                            Message = "An internal server error occurred while processing the logistics event.", 
+                            Details = ex.Message
+                        }));
               
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message });
             }
