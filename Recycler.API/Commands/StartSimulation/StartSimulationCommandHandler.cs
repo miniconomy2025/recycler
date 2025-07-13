@@ -40,7 +40,6 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
         await _resetService.ResetAsync(cancellationToken);
-
         DateTime? realStart = request.EpochStartTime.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(request.EpochStartTime.Value).UtcDateTime
             : null;
@@ -57,7 +56,17 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
             maxAttempts: 20,
             operationName: "Create bank account");
         if (!accountResponse.IsSuccessStatusCode)
-            return new StartSimulationResponse { Status = "error", Message = "Failed to create bank account" };
+        {
+            if (accountResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                //BANK ACCOUNT ALREADY EXISTS
+                accountResponse = await _http.GetAsync("/api/account/me", cancellationToken);
+            }
+            else
+            {
+                return new StartSimulationResponse { Status = "error", Message = "Failed to create bank account" };
+            }
+        }
 
         var accountData = await accountResponse.Content.ReadFromJsonAsync<AccountResponse>(cancellationToken: cancellationToken);
         if (accountData is null)
@@ -82,8 +91,9 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
         var totalCost = recyclingMachine.price * 2;
         var loanResponse = await RetryHelper.RetryAsync(
-            () => _http.PostAsJsonAsync("/loan", new { amount = totalCost + 5000 }, cancellationToken),
+            () => _http.PostAsJsonAsync("/api/loan", new { amount = totalCost + 5000 }, cancellationToken),
             operationName: "Request loan");
+        Console.WriteLine(await loanResponse.Content.ReadAsStringAsync());
         if (!loanResponse.IsSuccessStatusCode)
             return new StartSimulationResponse { Status = "error", Message = "Loan request failed" };
 

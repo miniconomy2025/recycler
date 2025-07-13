@@ -15,20 +15,21 @@ namespace Recycler.API
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
-        public PlaceMachineOrderCommandHandler(HttpClient httpClient, IConfiguration configuration)
+        public PlaceMachineOrderCommandHandler(IHttpClientFactory httpFactory, IConfiguration configuration)
         {
-            _httpClient = httpClient;
+            _httpClient = httpFactory.CreateClient("test");
             _configuration = configuration;
         }
 
         public async Task<MachineOrderResponseDto> Handle(PlaceMachineOrderCommand request, CancellationToken cancellationToken)
         {
-            var thoHApiBaseUrl = _configuration["ThoHApi:BaseUrl"] ?? "http://localhost:5001";
+            var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "http://localhost:5001";
             _httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
 
             var machineOrderRequest = new MachineOrderRequestDto
             {
-                machineName = request.machineName
+                machineName = request.machineName,
+                quantity = request.quantity ?? 1
             };
 
             var jsonContent = JsonSerializer.Serialize(machineOrderRequest);
@@ -36,7 +37,7 @@ namespace Recycler.API
 
             try
             {
-                var response = await _httpClient.PostAsync("/machines/orders", httpContent, cancellationToken);
+                var response = await _httpClient.PostAsync("/machines", httpContent, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -56,7 +57,7 @@ namespace Recycler.API
                             }
                             catch (JsonException)
                             {
-                                
+
                             }
                         }
                     }
