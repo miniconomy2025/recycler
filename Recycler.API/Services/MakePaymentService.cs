@@ -33,7 +33,7 @@ public class MakePaymentService
         };
 
         var response = await RetryHelper.RetryAsync(
-            () => httpClient.PostAsJsonAsync("/api/transactions", requestBody, cancellationToken),
+            () => httpClient.PostAsJsonAsync("/api/transaction", requestBody, cancellationToken),
             operationName: "Send payment");
         if (!response.IsSuccessStatusCode)
         {

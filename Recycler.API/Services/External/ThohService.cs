@@ -60,7 +60,7 @@ public class ThohService(IHttpClientFactory httpClientFactory, IRawMaterialServi
         httpClient.BaseAddress = new Uri(_config["thoHApiUrl"] ?? "");
         try
         {
-            HttpResponseMessage response = await httpClient.GetAsync("simulation/raw-materials");
+            HttpResponseMessage response = await httpClient.GetAsync("raw-materials");
             response.EnsureSuccessStatusCode();
 
             var responseBody = await response.Content.ReadAsStringAsync();

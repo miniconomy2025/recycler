@@ -1,10 +1,12 @@
 using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Recycler.API;
 using Recycler.API.Services;
+using Recycler.API.Utils;
 
 CultureInfo.CurrentCulture = new CultureInfo("en-ZA") { NumberFormat = { NumberDecimalSeparator = "." } };
 
@@ -44,6 +46,11 @@ builder.Services.AddSingleton<ICommercialBankService, CommercialBankService>();
 builder.Services.AddScoped<IRecyclingService, RecyclingService>();
 builder.Services.AddHostedService<RecyclingBackgroundService>();
 builder.Services.AddScoped<IDatabaseResetService, DatabaseResetService>();
+builder.Services.AddScoped<SimulationBootstrapService>();
+builder.Services.AddScoped<SimulationBootstrapService>();
+builder.Services.AddScoped<BankAccountService>();
+builder.Services.AddScoped<LoanService>();
+builder.Services.AddScoped<MachineMarketService>();
 
 builder.Services.AddOpenApi();
 
@@ -108,13 +115,10 @@ builder.Services
         };
     });
 
-// builder.Services.
-// AddTransient<HttpClientHandler>(sp =>
-// {
-
-// });
+builder.Services.AddTransient<HttpLoggingHandler>();
 
 builder.Services.AddHttpClient("test")
+    .AddHttpMessageHandler<HttpLoggingHandler>()
     .ConfigurePrimaryHttpMessageHandler(() =>
     {
         var cert = new X509Certificate2("certs/client.pfx", "1234",
@@ -142,9 +146,28 @@ app.UseSwaggerUI(options =>
 
 app.Use(async (context, next) =>
 {
+    // Enable buffering so the body can be read multiple times
+    context.Request.EnableBuffering();
+
+    // Leave the stream open after reading
+    using var reader = new StreamReader(
+        context.Request.Body,
+        encoding: Encoding.UTF8,
+        detectEncodingFromByteOrderMarks: false,
+        bufferSize: 1024,
+        leaveOpen: true);
+
+    var body = await reader.ReadToEndAsync();
+
+    // Reset the stream position so the next middleware can read it
+    context.Request.Body.Position = 0;
+
     Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
+    Console.WriteLine($"\nBODY:\n{body}\n");
+
     await next();
 });
+
 
 app.UseHttpsRedirection();
 app.UseCors();

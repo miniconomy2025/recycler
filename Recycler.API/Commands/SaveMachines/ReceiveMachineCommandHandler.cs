@@ -28,19 +28,39 @@ namespace Recycler.API
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await connection.OpenAsync(cancellationToken);
 
+            // var existingMachineSql = "SELECT id, machine_id, received_at, is_operational FROM Machines WHERE machine_id = @MachineId;";
+            // var existingMachine = await connection.QueryFirstOrDefaultAsync<ReceivedMachineDto>(existingMachineSql, new { MachineId = request.ModelName });
+
+            // if (existingMachine != null)
+            // {
+            //     Console.WriteLine($"Warning: Machine with ThoH ID {request.ModelName} already exists in Machines table (Recycler ID: {existingMachine.Id}). Not adding duplicate.");
+            //     return existingMachine;
+            // }
+            // else
+            // {
             var insertSql = @"
-                INSERT INTO Machines (machine_id, received_at, is_operational)
-                VALUES (@MachineId, @ReceivedAt, @IsOperational)
-                RETURNING id, machine_id, received_at, is_operational;";
-
-            var newMachine = await connection.QuerySingleAsync<ReceivedMachineDto>(insertSql, new
+                    INSERT INTO Machines (machine_id, received_at, is_operational)
+                    VALUES (@MachineId, @ReceivedAt, @Status)
+                    RETURNING id, machine_id, received_at, is_operational;";
+            for (int i = 0; i <= request.Quantity; i++)
             {
-                MachineId = 4,
-                ReceivedAt = DateTime.UtcNow,
-                IsOperational = true
-            });
 
-            return newMachine;
+                var newReceivedMachine = await connection.QuerySingleAsync<ReceivedMachineDto>(insertSql, new
+                {
+                    MachineId = 1,
+                    ReceivedAt = DateTime.UtcNow,
+                    Status = true
+                });
+            }
+
+            return new ReceivedMachineDto
+            {
+                Id = 1,
+                IsOperational = true,
+                MachineId = 1,
+                ReceivedAt = DateTime.UtcNow
+            };
+            // }
         }
     }
 }

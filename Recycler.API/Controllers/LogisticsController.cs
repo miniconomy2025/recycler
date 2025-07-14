@@ -7,13 +7,14 @@ using Recycler.API.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Recycler.API.Services;
-using System; 
+using System;
+using System.Text.Json;
 
 namespace Recycler.API.Controllers
 {
     [ApiController]
-    
-    [Route("api/[controller]")]
+
+    [Route("[controller]")]
     public class LogisticsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -25,7 +26,7 @@ namespace Recycler.API.Controllers
             _logService = logService;
         }
 
-        [HttpPost("/logistics")] 
+        [HttpPost()]
         [ProducesResponseType(typeof(LogisticsResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -46,28 +47,35 @@ namespace Recycler.API.Controllers
                 };
 
                 var result = await _mediator.Send(command);
-                
+
                 await _logService.CreateLog(HttpContext, requestDto, Ok(result));
-                
-                return Ok(result); 
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                await _logService.CreateLog(HttpContext, requestDto, StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message }));
-              
+                await _logService.CreateLog(HttpContext,
+                    requestDto, StatusCode(StatusCodes.Status500InternalServerError,
+                        new
+                        {
+                            Message = "An internal server error occurred while processing the logistics event.",
+                            Details = ex.Message
+                        }));
+
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An internal server error occurred while processing the logistics event.", Details = ex.Message });
             }
         }
 
-       
-        [HttpPost("consumer-deliveries")] 
-        [ProducesResponseType(typeof(ConsumerLogisticsDeliveryResponseDto), StatusCodes.Status200OK)] 
+
+        [HttpPost("consumer-deliveries")]
+        [ProducesResponseType(typeof(ConsumerLogisticsDeliveryResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ProcessConsumerDeliveryNotification([FromBody] ConsumerLogisticsDeliveryNotificationRequestDto requestDto) 
+        public async Task<IActionResult> ProcessConsumerDeliveryNotification([FromBody] ConsumerLogisticsDeliveryNotificationRequestDto requestDto)
         {
             try
             {
+                Console.WriteLine($"Incoming: {JsonSerializer.Serialize(requestDto)}");
                 if (string.IsNullOrEmpty(requestDto.Status))
                 {
                     return BadRequest(new { Message = "Status field is required." });
@@ -77,7 +85,7 @@ namespace Recycler.API.Controllers
                     return BadRequest(new { Message = "ModelName and Quantity (must be > 0) are required for delivered items." });
                 }
 
-                var command = new ProcessConsumerDeliveryNotificationCommand 
+                var command = new ProcessConsumerDeliveryNotificationCommand
                 {
                     Status = requestDto.Status,
                     ModelName = requestDto.ModelName,

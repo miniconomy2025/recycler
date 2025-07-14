@@ -18,6 +18,8 @@ public class OrderDto(ISimulationClock simulationClock, ICommercialBankService c
 
     public IEnumerable<OrderItemDto> OrderItems { get; set; } = [];
     
+    public decimal Total { get; set; }
+    
     public string AccountNumber { get; set; } = "";
 
     public OrderDto MapDbObjects(Order? order, OrderStatus? orderStatus, IEnumerable<OrderItemDto> orderItems)
@@ -37,6 +39,9 @@ public class OrderDto(ISimulationClock simulationClock, ICommercialBankService c
         }
         
         OrderItems = orderItems;
+
+        Total = orderItems.Sum(item => item.PricePerKg * item.QuantityInKg);
+        
         AccountNumber = commercialBankService.AccountNumber;
 
         return this;
