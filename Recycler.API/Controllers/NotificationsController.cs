@@ -19,7 +19,7 @@ public class NotificationsController(
 ) : ControllerBase
 {
     [HttpPost]
-    [Route("recycler/notifyme")]
+    [Route("recycler/notify-me")]
     public async Task<IActionResult> NotifyAvailablePhones()
     {
         Console.WriteLine("THoH has notified Recycler about available phones.");
