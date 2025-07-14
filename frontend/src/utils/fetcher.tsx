@@ -111,7 +111,7 @@ function transformData(endpoint: string, data: any): any {
     
     case '/log':
 
-      return transformToTraceHistory(data);
+      return data;
     
     
     default:
@@ -125,23 +125,21 @@ function transformData(endpoint: string, data: any): any {
 function transformStockToDashboard(data: any): any {
   const rawMaterials = data.rawMaterials || [];
   const phones = data.phones || [];
-  
-  const totalMaterialsKg = rawMaterials.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-  const totalPhones = phones.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-  
+
   return {
-    totalOrders: totalPhones, 
-    completedOrders: Math.floor(totalPhones * 0.8), 
-    materialsReadyKg: totalMaterialsKg,
-    pendingOrders: Math.floor(totalPhones * 0.2), 
+    totalOrders: data.totalOrders || 0,
+    completedOrders: data.completedOrders || 0,
+    pendingOrders: data.pendingOrders || 0,
+    materialsReadyKg: rawMaterials.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0),
     materialInventory: rawMaterials.map((item: any) => ({
       material: item.name,
       currentKg: item.quantity,
-      totalKg: item.quantity + Math.floor(item.quantity * 0.3), 
-      barColor: getBarColor(item.quantity)
-    }))
+      totalKg: item.quantity + Math.floor(item.quantity * 0.3),
+      barColor: getBarColor(item.quantity),
+    })),
   };
 }
+
 
 /**
  * Transform materials data to material orders format

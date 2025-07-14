@@ -2,7 +2,7 @@ interface StockItemProps {
   displayName: string;
   quantity: number;
   unit: string;
-  status?: string; // Optional status for visual cues
+  status?: string; 
 }
 
 export const StockItem: React.FC<StockItemProps> = ({ displayName, quantity, unit, status }) => {

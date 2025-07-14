@@ -2,42 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles for the entire application */
+
 body {
-  font-family: 'Inter', sans-serif; /* Using Inter font as per instructions */
+  font-family: 'Inter', sans-serif; 
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f3f4f6; /* Light gray background */
-  color: #374151; /* Dark gray text for general content */
+  background-color: #f3f4f6; 
+  color: #374151; 
 }
 
-/* Custom styles for the Navbar active link */
+
 .nav-link.active {
-  color: #10B981; /* A vibrant green for active links */
-  border-bottom: 2px solid #10B981; /* Underline for active links */
-  padding-bottom: 0.5rem; /* Space for the underline */
+  color: #10B981; 
+  border-bottom: 2px solid #10B981; 
+  padding-bottom: 0.5rem; 
 }
 
-/* Custom gradient button style */
+
 .gradient-button {
-  background-image: linear-gradient(to right, #10B981, #34D399); /* Green gradient */
+  background-image: linear-gradient(to right, #10B981, #34D399); 
   transition: all 0.3s ease-in-out;
   border: none;
   cursor: pointer;
 }
 
 .gradient-button:hover {
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); /* Subtle shadow on hover */
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); 
 }
 
-/* General content section padding */
+
 .content-section {
   padding: 24px;
 }
 
-/* Responsive adjustments for content section */
-@media (min-width: 1024px) { /* Equivalent to lg: breakpoint in Tailwind */
+
+@media (min-width: 1024px) { 
   .content-section {
     padding: 40px;
   }

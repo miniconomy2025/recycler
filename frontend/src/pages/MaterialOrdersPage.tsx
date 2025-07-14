@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { fetcher } from '../utils/fetcher'; // Adjust path if needed
-import { MaterialOrderItem } from '../types'; // Adjust path if needed
+import { fetcher } from '../utils/fetcher';
+import { MaterialOrderItem } from '../types'; 
 
 export const MaterialOrdersPage: React.FC = () => {
   const [materialOrders, setMaterialOrders] = useState<MaterialOrderItem[]>([]);
@@ -56,9 +56,6 @@ export const MaterialOrdersPage: React.FC = () => {
     <section id="material-orders-content" className="content-section bg-white p-6 rounded-xl shadow-md">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Material Orders</h2>
-        <button className="gradient-button text-white px-6 py-2 rounded-full font-semibold flex items-center hover:scale-105 transform">
-          <span className="text-xl mr-2">+</span> Create Order
-        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

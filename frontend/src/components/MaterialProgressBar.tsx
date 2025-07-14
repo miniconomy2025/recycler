@@ -2,18 +2,29 @@ interface MaterialProgressBarProps {
   material: string;
   currentKg: number;
   totalKg: number;
-  barColor: string;
+  maxKg: number; 
 }
 
-export const MaterialProgressBar: React.FC<MaterialProgressBarProps> = ({ material, currentKg, totalKg, barColor }) => {
-  const percentage = (currentKg / totalKg) * 100;
+export const MaterialProgressBar: React.FC<MaterialProgressBarProps> = ({
+  material,
+  currentKg,
+  totalKg,
+  maxKg,
+}) => {
+  const widthPercent = Math.min((currentKg / maxKg) * 100, 100); 
+
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-gray-700 w-1/4">{material}</span>
-      <div className="w-3/4 bg-gray-200 rounded-full h-2">
-        <div className={`${barColor} rounded-full h-full`} style={{ width: `${percentage}%` }}></div>
+    <div className="space-y-1">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-semibold text-gray-800">{material}</span>
+        <span className="text-sm text-gray-600">{currentKg}kg </span>
       </div>
-      <span className="ml-4 text-gray-700 font-medium">{currentKg}kg</span>
+      <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div
+          className="bg-green-500 h-full rounded-full transition-all duration-300"
+          style={{ width: `${widthPercent}%` }}
+        ></div>
+      </div>
     </div>
   );
 };

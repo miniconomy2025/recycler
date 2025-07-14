@@ -1,32 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart } from '@mui/x-charts'; // Ensure @mui/x-charts is installed
-import { fetcher } from '../utils/fetcher'; // Adjust path if needed
-import { CompanyRevenue } from '../types'; // Adjust path if needed
+import { BarChart } from '@mui/x-charts'; 
+import { fetcher } from '../utils/fetcher'; 
+import { CompanyRevenue } from '../types'; 
 
 export const RevenuePage: React.FC = () => {
   const [data, setData] = useState<CompanyRevenue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [lastTransactionDate, setLastTransactionDate] = useState<string>('');
 
   useEffect(() => {
     setLoading(true);
     setError(null);
+
     fetcher<CompanyRevenue[]>('/company-orders')
       .then((res) => {
-        // Grouping logic as provided by the user
-        const totals: Record<string, number> = {};
-        res.forEach((order: CompanyRevenue) => { // Ensure order is typed as CompanyRevenue
-          const { companyName, companyTotalOrders } = order;
-          totals[companyName] = (totals[companyName] ?? 0) + companyTotalOrders;
+        console.log('API Response:', res); // Debugging: check raw response
+
+        let calculatedTotalRevenue = 0;
+        let mostRecentDate = '';
+
+        res.forEach((order: CompanyRevenue) => {
+          // Safely parse revenue value as a number
+          const revenue = Number(order.companyTotalOrders);
+          console.log('Parsed Revenue:', revenue); // Debugging
+
+          calculatedTotalRevenue += isNaN(revenue) ? 0 : revenue;
+
+          if (order.createdAt) {
+            const orderDate = new Date(order.createdAt);
+            const recentDate = new Date(mostRecentDate);
+            if (!mostRecentDate || orderDate > recentDate) {
+              mostRecentDate = order.createdAt;
+            }
+          }
         });
 
-        const grouped: CompanyRevenue[] = Object.entries(totals).map(
-          ([companyName, companyTotalOrders]) => ({
-            companyName,
-            companyTotalOrders,
-          })
-        );
-        setData(grouped);
+        setData(res);
+        setTotalRevenue(calculatedTotalRevenue);
+        setLastTransactionDate(mostRecentDate);
       })
       .catch((err: any) => {
         console.error('Error fetching revenue data:', err);
@@ -34,6 +47,29 @@ export const RevenuePage: React.FC = () => {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-BB', {
+      style: 'currency',
+      currency: 'BBD',
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return 'No recent transactions';
+    try {
+      const date = new Date(dateString);
+      return `Last transaction: ${date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}`;
+    } catch {
+      return 'Invalid date format';
+    }
+  };
 
   if (loading) {
     return (
@@ -67,14 +103,28 @@ export const RevenuePage: React.FC = () => {
     <section id="revenue-page-content" className="content-section bg-white p-6 rounded-xl shadow-md">
       <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Total Revenue per Supplier</h2>
       <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200 mb-6">
-        <p className="text-lg font-semibold text-green-800">Total Revenue: $1,250,000</p>
-        <p className="text-sm text-gray-600">Last 30 days: +15%</p>
+        <p className="text-lg font-semibold text-green-800">
+          Total Revenue: {formatCurrency(totalRevenue)}
+        </p>
+        <p className="text-sm text-gray-600">
+          {formatDate(lastTransactionDate)}
+        </p>
       </div>
-      <div className="w-full overflow-x-auto h-80 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-center p-4">
-        {/* Placeholder for Bar Chart due to external dependency error */}
-        <p>Bar Chart Placeholder</p>
-        <p className="text-sm mt-2">Chart library not available in this environment.</p>
+      <div className="w-full h-72 bg-gray-100 rounded-lg p-4">
+        <BarChart
+          xAxis={[{ scaleType: 'band', data: data.map(d => d.companyName) }]}
+          series={[
+            {
+              data: data.map(d => Number(d.companyTotalOrders) || 0),
+              label: 'Revenue',
+              color: '#4caf50',
+            }
+          ]}
+          width={700}
+          height={280}
+        />
       </div>
+
     </section>
   );
 };

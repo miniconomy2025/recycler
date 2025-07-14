@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { fetcher } from '../utils/fetcher'; // Adjust path if needed
-import { DashboardData } from '../types'; // Adjust path if needed
-import { Card } from '../components/Card'; // Adjust path if needed
-import { MaterialProgressBar } from '../components/MaterialProgressBar'; // Adjust path if needed
+import { fetcher } from '../utils/fetcher';
+import { DashboardData } from '../types';
+import { Card } from '../components/Card';
+import { MaterialProgressBar } from '../components/MaterialProgressBar';
 
 export const HomePage: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -46,16 +46,43 @@ export const HomePage: React.FC = () => {
     );
   }
 
+  const maxCurrentKg = dashboardData
+    ? Math.max(...dashboardData.materialInventory.map(item => item.currentKg))
+    : 1;
+
   return (
     <section id="dashboard-content" className="content-section">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card title="Total Orders" value={dashboardData?.totalOrders || 0} icon="📦" bgColor="bg-blue-600" />
-        <Card title="Materials Ready" value={dashboardData?.materialsReadyKg || 0} unit="kg" icon="🏭" bgColor="bg-purple-600" />
-        <Card title="Pending Orders" value={dashboardData?.pendingOrders || 0} icon="🚚" bgColor="bg-orange-600" />
+      {/* Cards Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto mb-8">
+        <Card
+          title="Total Orders"
+          value={dashboardData?.totalOrders || 0}
+          icon="📦"
+          bgColor="bg-blue-600"
+        />
+        <Card
+          title="Pending Orders"
+          value={dashboardData?.pendingOrders || 0}
+          icon="⏳"
+          bgColor="bg-yellow-600"
+        />
+        <Card
+          title="Completed Orders"
+          value={dashboardData?.completedOrders || 0}
+          icon="✅"
+          bgColor="bg-purple-600"
+        />
+        <Card
+          title="Materials Ready"
+          value={dashboardData?.materialsReadyKg || 0}
+          unit="kg"
+          icon="🏭"
+          bgColor="bg-green-600"
+        />
       </div>
 
       {/* Material Inventory Section */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
+      <div className="bg-white p-6 rounded-xl shadow-md max-w-6xl mx-auto">
         <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
           <span className="text-green-700 mr-2">📊</span> Material Inventory
         </h2>
@@ -66,7 +93,7 @@ export const HomePage: React.FC = () => {
               material={item.material}
               currentKg={item.currentKg}
               totalKg={item.totalKg}
-              barColor={item.barColor}
+              maxKg={1000000}
             />
           ))}
         </div>

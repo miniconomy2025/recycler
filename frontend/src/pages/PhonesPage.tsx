@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetcher } from '../utils/fetcher'; // Adjust path if needed
-import { PhoneInventoryItem } from '../types'; // Adjust path if needed
-import { StockItem } from '../components/StockItem'; // Reusing StockItem for consistency
+import { fetcher } from '../utils/fetcher';
+import { PhoneInventoryItem } from '../types';
+import { StockItem } from '../components/StockItem'; 
 
 export const PhonesPage: React.FC = () => {
   const [phoneInventory, setPhoneInventory] = useState<PhoneInventoryItem[]>([]);
@@ -63,7 +63,7 @@ export const PhonesPage: React.FC = () => {
             key={index}
             displayName={phone.model}
             quantity={phone.quantity}
-            unit="units" // Assuming 'units' for phones
+            unit="units" 
             status={phone.status}
           />
         ))}

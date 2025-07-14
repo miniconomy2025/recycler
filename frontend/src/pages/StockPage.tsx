@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetcher } from '../utils/fetcher'; // Adjust path if needed
+import { fetcher } from '../utils/fetcher'; 
 import { StockData } from '../types/index';
-import { StockItem } from '../components/StockItem'; // Adjust path if needed
+import { StockItem } from '../components/StockItem'; 
 
 export const StockPage: React.FC = () => {
   const [stock, setStock] = useState<StockData>({
@@ -69,24 +69,7 @@ export const StockPage: React.FC = () => {
         </div>
       )}
 
-      {stock.phones.length > 0 && (
-        <div>
-          <h3 className="text-2xl font-semibold text-gray-700 mb-4">Phones</h3>
-          <div className="space-y-4">
-            {stock.phones.map((item, index) => (
-              <StockItem
-                key={`phone-${index}`}
-                displayName={item.name}
-                quantity={item.quantity}
-                unit={item.unit}
-                status={item.status}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {stock.rawMaterials.length === 0 && stock.phones.length === 0 && (
+      {stock.rawMaterials.length === 0 && (
         <p className="text-gray-600 text-center">No stock data available.</p>
       )}
     </section>

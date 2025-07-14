@@ -1,22 +1,32 @@
+export type JsonBody = Record<string, unknown>; 
 
-export type JsonBody = Record<string, unknown>; // Exported
-
-export type FetcherOptions = Omit<RequestInit, 'body'> & { // Exported
+export type FetcherOptions = Omit<RequestInit, 'body'> & {
   body?: BodyInit | null;
 };
 
-// Type for Company Revenue data
-export interface CompanyRevenue { // Exported
+
+export interface CompanyRevenue { 
   companyName: string;
+  orderNumber: string;
+  status: string;
+  createdAt: string; 
+  items: RevenueOrderItemDto[];
   companyTotalOrders: number;
 }
 
-// Type for Dashboard Data
-export interface DashboardData { // Exported
+
+export interface RevenueOrderItemDto {
+  materialName: string;
+  quantityKg: number;
+  totalPrice: number | null;
+}
+
+
+export interface DashboardData { 
   totalOrders: number;
   completedOrders: number;
   materialsReadyKg: number;
-  pendingOrders: number;
+  pendingOrders: number;    
   materialInventory: {
     material: string;
     currentKg: number;
@@ -25,29 +35,29 @@ export interface DashboardData { // Exported
   }[];
 }
 
-// Type for Stock Item (Raw Materials & Phones)
-export interface StockItemData { // Exported
+
+export interface StockItemData { 
   name: string;
   quantity: number;
   unit: string;
-  status?: string; // e.g., 'High', 'Medium', 'Low' for raw materials, 'Awaiting processing' for phones
+  status?: string; 
 }
 
-// Type for overall Stock data
-export interface StockData { // Exported
+
+export interface StockData { 
   rawMaterials: StockItemData[];
   phones: StockItemData[];
 }
 
-// Type for Phone Inventory
-export interface PhoneInventoryItem { // Exported
+
+export interface PhoneInventoryItem { 
   model: string;
   quantity: number;
   status: string;
 }
 
-// Type for Material Order
-export interface MaterialOrderItem { // Exported
+
+export interface MaterialOrderItem { 
   name: string;
   quantity: number;
   status: string;
