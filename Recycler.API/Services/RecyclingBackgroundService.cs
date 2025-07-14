@@ -56,11 +56,11 @@ public class RecyclingBackgroundService : BackgroundService
                         else
                         {
                             _logger.LogWarning(
-                                "Recycling process failed or partially completed. Message: {message}", 
+                                "Recycling process failed. Message: {message}", 
                                 result.Message);
                             
                             await _logService.CreateLog(null, "Background Service: RecyclingBackgroundService",
-                                $"Recycling process failed or partially completed. Message: {result.Message}");
+                                $" Message: {result.Message}");
                         }
                     }
                 }

@@ -1,23 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Layout } from './pages/Layout';
-import { Home } from './pages/Home';
-import { Revenue } from './pages/Revenue';
-import { Stock } from './pages/Stock';
-import Log from "./pages/Log";
+import React, { useState } from 'react'; 
 
-export default function App() {
+import { Navbar } from './components/Navbar';
+import { HomePage } from './pages/HomePage';
+import { RevenuePage } from './pages/RevenuePage';
+import { StockPage } from './pages/StockPage';
+import { PhonesPage } from './pages/PhonesPage';
+import { TraceHistoryPage } from './pages/TraceHistoryPage';
+
+export const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <HomePage />;
+      case 'revenue':
+        return <RevenuePage />;
+      case 'stock':
+        return <StockPage />;
+      case 'phones':
+        return <PhonesPage />;
+      case 'trace-history':
+        return <TraceHistoryPage />;
+      default:
+        return <HomePage />;
+    }
+  };
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path='/revenue' element={<Revenue />} />
-          <Route path='/stock' element={<Stock />} />
-          <Route path='/log' element={<Log />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <div className="min-h-screen flex flex-col">
+      <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
+      <main className="flex-grow container mx-auto p-6 lg:p-10">
+        {renderContent()}
+      </main>
+    </div>
   );
-}
+};

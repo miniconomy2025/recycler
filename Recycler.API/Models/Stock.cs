@@ -4,6 +4,9 @@ namespace Recycler.API.Models
     {
         public List<StockItem>? RawMaterials { get; set; } = [];
         public List<StockItem> Phones { get; set; } = [];
+        public int TotalOrders { get; set; }           
+        public int CompletedOrders { get; set; }      
+        public int PendingOrders { get; set; }  
     }
 
     public class StockItem

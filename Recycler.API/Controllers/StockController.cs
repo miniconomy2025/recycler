@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Recycler.API.Models;
 using Recycler.API.Models.ExternalApiRequests;
-using Recycler.API.Queries.GetRevenueReport;
+using Recycler.API.Queries;
 using Recycler.API.Services;
+
 
 namespace Recycler.API.Controllers;
 

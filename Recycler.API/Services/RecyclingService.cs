@@ -102,9 +102,9 @@ namespace Recycler.API.Services
                 var totalMachinesSql = @"
                     SELECT COUNT(*) 
                     FROM Machines";
-                
+
                 var totalMachinesCount = await connection.QuerySingleAsync<int>(totalMachinesSql, transaction: transaction);
-                
+
                 if (totalMachinesCount == 0)
                 {
                     return new RecyclingResult
@@ -115,14 +115,14 @@ namespace Recycler.API.Services
                         TotalMaterialsRecycled = 0
                     };
                 }
-                
+
                 var operationalMachinesSql = @"
                     SELECT COUNT(*) 
                     FROM Machines 
                     WHERE is_operational = true";
-                
+
                 var operationalMachinesCount = await connection.QuerySingleAsync<int>(operationalMachinesSql, transaction: transaction);
-                
+
                 if (operationalMachinesCount == 0)
                 {
                     return new RecyclingResult
@@ -133,9 +133,9 @@ namespace Recycler.API.Services
                         TotalMaterialsRecycled = 0
                     };
                 }
-                
+
                 var maxProcessingCapacity = operationalMachinesCount * MACHINE_PRODUCTION_RATE;
-                
+
                 var phoneInventoriesSql = @"
                     SELECT 
                         pi.phone_id as PhoneId,
@@ -146,7 +146,7 @@ namespace Recycler.API.Services
                     JOIN phone p ON pi.phone_id = p.id
                     JOIN phonebrand pb ON p.phone_brand_id = pb.id
                     WHERE pi.quantity > 0
-                    ORDER BY pi.quantity DESC"; 
+                    ORDER BY pi.quantity DESC";
 
                 var phoneInventories = await connection.QueryAsync<PhoneInventoryDto>(phoneInventoriesSql, transaction: transaction);
 
@@ -192,8 +192,8 @@ namespace Recycler.API.Services
                             SET quantity = @QuantityRemaining 
                             WHERE phone_id = @PhoneId";
 
-                        await connection.ExecuteAsync(updatePhoneInventorySql, 
-                            new { PhoneId = phoneId, QuantityRemaining = quantityRemaining }, 
+                        await connection.ExecuteAsync(updatePhoneInventorySql,
+                            new { PhoneId = phoneId, QuantityRemaining = quantityRemaining },
                             transaction);
 
                         foreach (var (materialName, estimatedQuantity) in estimate.EstimatedMaterials)
@@ -249,15 +249,15 @@ namespace Recycler.API.Services
                         processedPhoneModels.Add($"{quantityToProcess}x {brandName} {model}");
                         totalProcessedCount += quantityToProcess;
                     }
-                    await transaction.CommitAsync();
+                    
                 }
 
                 var leftoverPhones = totalAvailablePhones - totalProcessedCount;
-                var successMessage = leftoverPhones > 0 
+                var successMessage = leftoverPhones > 0
                     ? $"Recycling process completed! Processed {totalProcessedCount} phones using {actualMachinesUsed} recycling machine(s). {leftoverPhones} phones remain in inventory due to machine capacity limits. Processed: {string.Join(", ", processedPhoneModels)}"
                     : $"Recycling process completed! Processed all {totalProcessedCount} phones using {actualMachinesUsed} recycling machine(s). Processed: {string.Join(", ", processedPhoneModels)}";
 
-                return new RecyclingResult
+                var result = new RecyclingResult
                 {
                     Success = true,
                     Message = successMessage,
@@ -266,11 +266,22 @@ namespace Recycler.API.Services
                     PhonesProcessed = totalProcessedCount,
                     ProcessingDate = DateTime.UtcNow,
                 };
-
+                await transaction.CommitAsync();
+                return result;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                if (transaction != null && transaction.Connection != null)
+                {
+                    try
+                    {
+                        await transaction.RollbackAsync();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Transaction was already completed
+                    }
+                }
                 return new RecyclingResult
                 {
                     Success = false,

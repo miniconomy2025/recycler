@@ -47,10 +47,10 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
                 {
                     MaterialName = i.material_name,
                     QuantityKg = i.quantity_in_kg,
-                    TotalPrice = i.price
+                    TotalPrice = i.quantity_in_kg * i.price_per_kg  
                 }).ToList();
 
-                var total = items.Sum(x => x.TotalPrice);
+                var total = items.Sum(x => x.TotalPrice ?? 0m);
 
                 return new RevenueReportDto
                 {
@@ -65,6 +65,7 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
             .ToList();
 
         return grouped;
+
     }
 }
 

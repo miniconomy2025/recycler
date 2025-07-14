@@ -8,8 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Dapper;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Recycler.API.Handlers
+namespace Recycler.API
 {
     public class ReceiveMachineCommandHandler : IRequestHandler<ReceiveMachineCommand, ReceivedMachineDto>
     {
