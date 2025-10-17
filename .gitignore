@@ -8,3 +8,13 @@
 **/*.pem
 certs/
 secrets.json
+
+# .NET build & test outputs
+bin/
+obj/
+TestResults/
+coveragereport/
+*.trx
+*.coverage
+*.nunit.xml
+*.vsmdi
