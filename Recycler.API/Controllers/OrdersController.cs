@@ -1,38 +1,77 @@
+using System.Runtime.InteropServices.JavaScript;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Recycler.API.Models;
+using Recycler.API.Services;
 
 namespace Recycler.API;
 
 [ApiController]
 [Route("[controller]")]
-public class OrdersController(IMediator mediator, IGenericRepository<Order> orderRepository) : ControllerBase
+public class OrdersController(IMediator mediator, ILogService logService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAllOrders()
+    [ProducesResponseType(typeof(GenericResponse<OrderDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetOrderById([FromQuery] int id)
     {
-        // restrict with supplier
-        return Ok(new List<Order>());
+        try
+        {
+            var query = new GetOrderByIdQuery(id);
+            
+            var response =  Ok(await mediator.Send(query));
+            
+            await logService.CreateLog(HttpContext, id, response);
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
-    
+
     [HttpGet]
-    [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GenericResponse<OrderDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     [Route("{orderNumber}")]
     public async Task<IActionResult> GetOrderByOrderNumber(Guid orderNumber)
     {
-        // get Supplier's Details compare against order number
-        var query = new GetOrderByOrderNumberQuery(orderNumber);
-        return Ok(await mediator.Send(query));
+        try
+        {
+            var query = new GetOrderByOrderNumberQuery(orderNumber);
+        
+            var response =  Ok(await mediator.Send(query));
+            
+            await logService.CreateLog(HttpContext, orderNumber, response);
+            
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
     
     
     [HttpPost]
-    [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GenericResponse<OrderDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFound), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
     {
-        return Ok(await mediator.Send(request));
+        try
+        {
+            var response = Ok(await mediator.Send(request));
+
+            await logService.CreateLog(HttpContext, request, response);
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 }

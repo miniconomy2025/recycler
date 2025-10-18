@@ -1,11 +1,11 @@
 using MediatR;
-using RecyclerApi.Models;
+using Recycler.API.Models;
 
-namespace RecyclerApi.Commands
+namespace Recycler.API.Commands
 {
     public class CreateCompanyCommand : IRequest<CreateCompanyResponse>
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public int RoleId { get; set; } 
         public int? KeyId { get; set; } 
     }

@@ -14,5 +14,5 @@ public class RevenueOrderItemDto
 {
     public required string MaterialName { get; set; }
     public int QuantityKg { get; set; }
-    public decimal TotalPrice { get; set; }
+    public decimal? TotalPrice { get; set; }
 }

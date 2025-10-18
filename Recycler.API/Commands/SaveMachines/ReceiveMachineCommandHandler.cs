@@ -1,37 +1,66 @@
 using MediatR;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
+using Dapper;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API
 {
     public class ReceiveMachineCommandHandler : IRequestHandler<ReceiveMachineCommand, ReceivedMachineDto>
     {
-        private static List<ReceivedMachineDto> _simulatedReceivedMachines = new List<ReceivedMachineDto>();
-        private static int _nextReceivedMachineId = 1;
+        private readonly IConfiguration _configuration;
 
-        public Task<ReceivedMachineDto> Handle(ReceiveMachineCommand request, CancellationToken cancellationToken)
+        public ReceiveMachineCommandHandler(IConfiguration configuration)
         {
-
-            var newReceivedMachine = new ReceivedMachineDto
-            {
-                Id = Interlocked.Increment(ref _nextReceivedMachineId),
-                MachineId = request.MachineId,
-                ReceivedAt = DateTime.UtcNow,
-                Status = "Received"
-            };
-
-            _simulatedReceivedMachines.Add(newReceivedMachine);
-
-            return Task.FromResult(newReceivedMachine);
+            _configuration = configuration;
         }
 
-        public static List<ReceivedMachineDto> GetSimulatedReceivedMachines()
+        public async Task<ReceivedMachineDto> Handle(ReceiveMachineCommand request, CancellationToken cancellationToken)
         {
-            return _simulatedReceivedMachines;
+            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            await connection.OpenAsync(cancellationToken);
+
+            // var existingMachineSql = "SELECT id, machine_id, received_at, is_operational FROM Machines WHERE machine_id = @MachineId;";
+            // var existingMachine = await connection.QueryFirstOrDefaultAsync<ReceivedMachineDto>(existingMachineSql, new { MachineId = request.ModelName });
+
+            // if (existingMachine != null)
+            // {
+            //     Console.WriteLine($"Warning: Machine with ThoH ID {request.ModelName} already exists in Machines table (Recycler ID: {existingMachine.Id}). Not adding duplicate.");
+            //     return existingMachine;
+            // }
+            // else
+            // {
+            var insertSql = @"
+                    INSERT INTO Machines (machine_id, received_at, is_operational)
+                    VALUES (@MachineId, @ReceivedAt, @Status)
+                    RETURNING id, machine_id, received_at, is_operational;";
+            for (int i = 0; i <= request.Quantity; i++)
+            {
+
+                var newReceivedMachine = await connection.QuerySingleAsync<ReceivedMachineDto>(insertSql, new
+                {
+                    MachineId = 1,
+                    ReceivedAt = DateTime.UtcNow,
+                    Status = true
+                });
+            }
+
+            return new ReceivedMachineDto
+            {
+                Id = 1,
+                IsOperational = true,
+                MachineId = 1,
+                ReceivedAt = DateTime.UtcNow
+            };
+            // }
         }
     }
 }

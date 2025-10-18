@@ -1,26 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'; 
 
-function App() {
+import { Navbar } from './components/Navbar';
+import { HomePage } from './pages/HomePage';
+import { RevenuePage } from './pages/RevenuePage';
+import { StockPage } from './pages/StockPage';
+import { PhonesPage } from './pages/PhonesPage';
+import { TraceHistoryPage } from './pages/TraceHistoryPage';
+
+export const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <HomePage />;
+      case 'revenue':
+        return <RevenuePage />;
+      case 'stock':
+        return <StockPage />;
+      case 'phones':
+        return <PhonesPage />;
+      case 'trace-history':
+        return <TraceHistoryPage />;
+      default:
+        return <HomePage />;
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
+      <main className="flex-grow container mx-auto p-6 lg:p-10">
+        {renderContent()}
+      </main>
     </div>
   );
-}
-
-export default App;
+};

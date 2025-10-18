@@ -1,1 +1,10 @@
 /mock-bank
+/mock-thoH
+/mock-bulk-logistics
+/backend
+/mock-consumer-logistics
+
+**/*.vscode
+**/*.pem
+certs/
+secrets.json

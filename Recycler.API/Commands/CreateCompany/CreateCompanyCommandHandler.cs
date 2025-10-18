@@ -1,8 +1,8 @@
 using MediatR;
-using RecyclerApi.Models;
-using RecyclerApi.Commands;
+using Recycler.API.Models;
+using Recycler.API.Commands;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API.Handlers
 {
     public class CreateCompanyCommandHandler : IRequestHandler<CreateCompanyCommand, CreateCompanyResponse>
     {
@@ -10,23 +10,23 @@ namespace RecyclerApi.Handlers
 
         public Task<CreateCompanyResponse> Handle(CreateCompanyCommand request, CancellationToken cancellationToken)
         {
-            string assignedRoleName = "Unknown";
+            string assignedRoleName;
             switch (request.KeyId)
             {
                 case 1:
-                    assignedRole = "Recycler";
+                    assignedRoleName = "Recycler";
                     break;
                 case 2:
-                    assignedRole = "Supplier";
+                    assignedRoleName = "Supplier";
                     break;
                 case 3:
-                    assignedRole = "Logistics";
+                    assignedRoleName = "Logistics";
                     break;
                 case 4:
-                    assignedRole = "Bank";
+                    assignedRoleName = "Bank";
                     break;
                 default:
-                    assignedRole = "General";
+                    assignedRoleName = "General";
                     break;
             }
             var newCompanyId = Interlocked.Increment(ref _nextCompanyId);

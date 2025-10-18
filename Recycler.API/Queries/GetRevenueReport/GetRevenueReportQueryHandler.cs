@@ -28,7 +28,7 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
                 o.created_at,
                 rm.name AS material_name,
                 oi.quantity_in_kg,
-                oi.price
+                oi.price_per_kg
             FROM Orders o
             JOIN Companies c ON o.company_id = c.id
             JOIN OrderStatus os ON o.order_status_id = os.id
@@ -47,15 +47,15 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
                 {
                     MaterialName = i.material_name,
                     QuantityKg = i.quantity_in_kg,
-                    TotalPrice = i.price
+                    TotalPrice = i.quantity_in_kg * i.price_per_kg  
                 }).ToList();
 
-                var total = items.Sum(x => x.TotalPrice);
+                var total = items.Sum(x => x.TotalPrice ?? 0m);
 
                 return new RevenueReportDto
                 {
                     CompanyName = g.Key.company_name,
-                    OrderNumber = g.Key.order_number,
+                    OrderNumber = g.Key.order_number.ToString(),
                     Status = g.Key.status,
                     CreatedAt = g.Key.created_at,
                     Items = items,
@@ -65,6 +65,7 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
             .ToList();
 
         return grouped;
+
     }
 }
 

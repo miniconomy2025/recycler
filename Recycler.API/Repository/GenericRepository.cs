@@ -62,12 +62,21 @@ public class GenericRepository<T>: IGenericRepository<T> where T : class
     
         await using NpgsqlConnection connection = GetConnection();
         
-        columnValue = columnValue.GetType() == typeof(string)
-            ? $"'{columnValue}'"
-            : columnValue;
-        
         return await connection.QueryAsync<T>($"SELECT * FROM {_tableName} WHERE {columnName} = @ColumnValue",
             new { ColumnValue = columnValue });
+    }
+
+    public async Task<IEnumerable<T>> GetByWhereClauseAsync(string condition, object value)
+    {
+        if (string.IsNullOrEmpty(condition)) 
+        {
+            return []; 
+        }
+    
+        await using NpgsqlConnection connection = GetConnection();
+        
+        return await connection.QueryAsync<T>($"SELECT * FROM {_tableName} WHERE {condition.Trim()} @Value",
+            new { Value = value });
     }
 
     public async Task<int> CreateAsync(T entity)
@@ -83,7 +92,8 @@ public class GenericRepository<T>: IGenericRepository<T> where T : class
         properties.ForEach(prop =>
         {
             string columnName = GetColumnNameFromProperty(prop.Name);
-            string columnValue = $"@{prop.Name}";
+            bool isJsonb = prop.GetCustomAttribute<ColumnAttribute>()?.TypeName == "jsonb";
+            string columnValue = $"@{prop.Name}{(isJsonb ? "::jsonb" : "")}";
             columnAndValues.Add(columnName, columnValue);
         });
         
@@ -95,22 +105,20 @@ public class GenericRepository<T>: IGenericRepository<T> where T : class
         return await connection.ExecuteScalarAsync<int>(sql, entity);
     }
 
-    public async Task<bool> UpdateAsync(T entity)
+    public async Task<bool> UpdateAsync(T entity, IEnumerable<string> propertyNamesToUpdate)
     {
         await using NpgsqlConnection connection = GetConnection();
         
-        List<PropertyInfo> properties = typeof(T).GetProperties()
-            .Where(p => p.Name != _primaryKeyName)
-            .ToList();
 
-        string setClauses = string.Join(", ", properties.Select(p =>
+        string setClauses = string.Join(", ", propertyNamesToUpdate.Select(propertyName =>
         {
-            string columnName = GetColumnNameFromProperty(p.Name);
-            string columnValue = p.PropertyType == typeof(string)
-                ? $"'@{p.GetValue(entity)}'"
-                : $"@{p.GetValue(entity)}";
+            PropertyInfo propertyInfo = typeof(T).GetProperty(propertyName) ?? 
+                throw new ArgumentException($"Unable to update entity  '{typeof(T).Name}' because it doesn't have a property named '{propertyName}'");
 
-            return $"{columnName} = {columnValue}";
+            object columnValue = propertyInfo.GetValue(entity) ?? 
+                throw new ArgumentException($"Unable to update entity '{typeof(T).Name}' because '{propertyName}' value is null");
+
+            return $"{GetColumnNameFromProperty(propertyName)} = {(propertyInfo.PropertyType == typeof(bool) ? "" : "@")}{columnValue}";
         }));
             
 

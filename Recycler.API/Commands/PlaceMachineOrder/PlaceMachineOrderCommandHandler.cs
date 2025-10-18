@@ -1,6 +1,6 @@
 using MediatR;
-using RecyclerApi.Commands;
-using RecyclerApi.Models;
+using Recycler.API.Commands;
+using Recycler.API.Models;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -8,27 +8,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
-namespace RecyclerApi.Handlers
+namespace Recycler.API
 {
     public class PlaceMachineOrderCommandHandler : IRequestHandler<PlaceMachineOrderCommand, MachineOrderResponseDto>
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
-        public PlaceMachineOrderCommandHandler(HttpClient httpClient, IConfiguration configuration)
+        public PlaceMachineOrderCommandHandler(IHttpClientFactory httpFactory, IConfiguration configuration)
         {
-            _httpClient = httpClient;
+            _httpClient = httpFactory.CreateClient("test");
             _configuration = configuration;
         }
 
         public async Task<MachineOrderResponseDto> Handle(PlaceMachineOrderCommand request, CancellationToken cancellationToken)
         {
-            var thoHApiBaseUrl = _configuration[thoHApiUrl] ?? "http://localhost:3000";
+            var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "http://localhost:5001";
             _httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
 
             var machineOrderRequest = new MachineOrderRequestDto
             {
-                MachineId = request.MachineId
+                machineName = request.machineName,
+                quantity = request.quantity ?? 1
             };
 
             var jsonContent = JsonSerializer.Serialize(machineOrderRequest);
@@ -36,7 +37,7 @@ namespace RecyclerApi.Handlers
 
             try
             {
-                var response = await _httpClient.PostAsync("/machines/orders", httpContent, cancellationToken);
+                var response = await _httpClient.PostAsync("/machines", httpContent, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -56,7 +57,7 @@ namespace RecyclerApi.Handlers
                             }
                             catch (JsonException)
                             {
-                             
+
                             }
                         }
                     }

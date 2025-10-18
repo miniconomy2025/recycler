@@ -9,9 +9,9 @@ namespace Recycler.API.Dto
   public class PhoneInventoryDto
     {
         public int PhoneId { get; set; }
-        public string Model { get; set; }
-        public string BrandName { get; set; }
+        public string? Model { get; set; }
+        public string? BrandName { get; set; }
         public int AvailableQuantity { get; set; }
-        public PhoneRecyclingEstimate EstimatedYield { get; set; }
+        public PhoneRecyclingEstimate? EstimatedYield { get; set; }
     }
 }

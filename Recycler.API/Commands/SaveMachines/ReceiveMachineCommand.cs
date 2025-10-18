@@ -1,10 +1,11 @@
 using MediatR;
-using RecyclerApi.Models;
+using Recycler.API.Models;
 
-namespace RecyclerApi.Commands
+namespace Recycler.API.Commands
 {
     public class ReceiveMachineCommand : IRequest<ReceivedMachineDto>
     {
-        public int MachineId { get; set; } 
+        public String ModelName { get; set; } = "recycling_machine";
+        public int Quantity { get; set; }
     }
 }
