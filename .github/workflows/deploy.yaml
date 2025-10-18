@@ -33,10 +33,10 @@ jobs:
 
       - name: Deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@ec2-54-75-118-89.eu-west-1.compute.amazonaws.com "sudo pkill -f Recycler.API"
-          scp -r -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" Recycler.API/bin/Release/net9.0/linux-x64/publish ec2-user@ec2-54-75-118-89.eu-west-1.compute.amazonaws.com:~/
-          scp -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" run.sh ec2-user@ec2-54-75-118-89.eu-west-1.compute.amazonaws.com:~/
-          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@ec2-54-75-118-89.eu-west-1.compute.amazonaws.com "sudo ./run.sh"
+          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com "sudo pkill -f Recycler.API"
+          scp -r -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" Recycler.API/bin/Release/net9.0/linux-x64/publish ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com:~/
+          scp -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" run.sh ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com:~/
+          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com "sudo ./run.sh"
     env:
       SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
       SERVER_CONFIG: ${{secrets.SERVER_CONFIG}}
