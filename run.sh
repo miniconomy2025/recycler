@@ -1,6 +1,8 @@
 yum update -y
 yum install git -y
 dnf install dotnet-sdk-9.0 -y
+yum install nginx -y
+yum install certbot -y
 
 REPO_URL="https://github.com/miniconomy2025/recycler.git"
 TARGET_DIR="/home/ec2-user/recycler"
@@ -16,9 +18,10 @@ else
     git reset --hard origin/main   # or replace 'main' with your default branch
 fi
 
-pkill -f Recycler.API
-cd "$TARGET_DIR" || exit 1
-cd Recycler.API
-export ASPNETCORE_ENVIRONMENT=Production
-rm -rf app.log
-nohup dotnet run > app.log 2>&1 &
+# pkill -f Recycler.API
+# cd "$TARGET_DIR" || exit 1
+# cd Recycler.API
+# export ASPNETCORE_ENVIRONMENT=Production
+# export DOTNET_ENVIRONMENT=Production
+# rm -rf app.log
+# nohup dotnet run > app.log 2>&1 &
