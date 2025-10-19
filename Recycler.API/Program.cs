@@ -106,7 +106,7 @@ app.MapHealthChecks("/healthz");
 
 
 //Migrations to run
-bool Migrations = true;
+bool Migrations = false;
 if (Migrations)
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
