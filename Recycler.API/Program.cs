@@ -102,8 +102,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-
-app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();

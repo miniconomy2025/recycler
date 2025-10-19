@@ -19,8 +19,8 @@ jobs:
 
       - name: Deploy
         run: |
-          scp -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" run.sh ec2-user@api.recycler.susnet.co.za:~/
-          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@api.recycler.susnet.co.za "sudo chmod +x run.sh && sudo ./run.sh"
+          scp -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" run.sh ec2-user@ec2-3-87-41-161.compute-1.amazonaws.com:~/
+          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@ec2-3-87-41-161.compute-1.amazonaws.com "sudo chmod +x run.sh && sudo ./run.sh"
     env:
       SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
       SERVER_CONFIG: ${{secrets.SERVER_CONFIG}}
