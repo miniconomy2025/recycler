@@ -1,9 +1,5 @@
 using System.Globalization;
-using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.Certificate;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Npgsql;
 using Recycler.API;
 using Recycler.API.Services;
@@ -63,7 +59,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddTransient<HttpLoggingHandler>();
 
 builder.Services.AddHttpClient("test")
-    .AddHttpMessageHandler<HttpLoggingHandler>();
+    .AddHttpMessageHandler<HttpLoggingHandler>()
+    .AddHttpMessageHandler<GlobalHeaderHandler>();
 
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -117,7 +114,6 @@ if (Migrations)
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     // Folder where SQL files live
     var migrationFolder = Path.Combine(AppContext.BaseDirectory, "dbMigrations");
-Console.WriteLine($"Folder exists? {Directory.Exists(migrationFolder)}");
     // Run each file
     foreach (var file in Directory.GetFiles(migrationFolder, "*.sql").OrderBy(f => f))
     {

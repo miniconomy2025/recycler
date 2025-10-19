@@ -8,7 +8,6 @@ import * as rds from 'aws-cdk-lib/aws-rds';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 
 export class CdkRecylerStack extends cdk.Stack {
@@ -181,9 +180,8 @@ export class CdkRecylerStack extends cdk.Stack {
 
     const albARecord = new route53.ARecord(this, 'ALBRecord', {
       zone: hostedZone,
-      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(alb)),
-      recordName: 'api.recycler',
-      ttl: cdk.Duration.minutes(5)
+      target: route53.RecordTarget.fromAlias(new targets.LoadBalancerTarget(alb)),
+      recordName: 'api.recycler'
     });
   }
 }
