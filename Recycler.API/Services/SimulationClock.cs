@@ -25,6 +25,7 @@ public class SimulationClock : ISimulationClock
 
         var elapsedRealSeconds = (DateTime.UtcNow - _realStart.Value).TotalSeconds;
         var elapsedSimulationMinutes = elapsedRealSeconds * 12;
+        Console.WriteLine($"\nElapsed simulation minutes: {elapsedSimulationMinutes}\n");
         return _simStart.AddMinutes(elapsedSimulationMinutes);
     }
     
@@ -39,4 +40,3 @@ public class SimulationClock : ISimulationClock
         return _simStart.AddMinutes(elapsedSimulationMinutes);
     }
 }
-
