@@ -5,10 +5,25 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 
 export class CdkRecylerStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    //CERTIFICATE STUFF
+    const domainName = 'susnet.co.za';
+    const apiSubDomain = 'api.recycler';
+
+    const hostedZone = new route53.HostedZone(this, 'HostedZone', {
+      zoneName: domainName
+    })
+
+    // const certificate = new certificatemanager.Certificate(this, 'Cert', {
+    //   domainName: apiSubDomain,
+    //   validation: certificatemanager.CertificateValidation.fromDns(hostedZone)
+    // });
+
     //GENERAL
     const generalVpc = new ec2.Vpc(this, 'generalVpc', {
       maxAzs: 2,
@@ -98,6 +113,12 @@ export class CdkRecylerStack extends cdk.Stack {
       securityGroup: securityGroup,
       keyName: 'ec2-key-pair', // Replace with actual key name or remove this line if not using SSH
     });
+
+    const apiARecord = new route53.ARecord(this, 'apiARecord', {
+      target: route53.RecordTarget.fromIpAddresses(ec2Instance.instancePublicIp),
+      zone: hostedZone,
+      recordName: 'recycler',
+      ttl: cdk.Duration.minutes(5)
+    })
   }
 }
-  
