@@ -21,25 +21,6 @@ public class StockController(IHttpClientFactory httpClientFactory, IMediator med
     [ProducesResponseType(typeof(StockSet), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStock()
     {
-        var _http = httpClientFactory.CreateClient("test");
-
-        //         var content = new StringContent(
-        //     JsonSerializer.Serialize(order),
-        //     Encoding.UTF8,
-        //     mediaType: "application/json"
-        // );
-
-        // var temp = await _http.PostAsJsonAsync("https://consumer-logistics-api.projects.bbdgrad.com/api/pickups",
-
-        //     new DeliveryOrderRequestDto
-        //     {
-        //         companyName = "Recycler",
-        //         quantity = 1,
-        //         recipient = "Recycler",
-        //         modelName = "Cosmos_Z25_ultra"
-        //     }
-        // );
-        // var result = temp.Content.ReadAsStringAsync();
         var query = new GetStockQuery();
         var result = await mediator.Send(query);
 
