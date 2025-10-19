@@ -37,6 +37,8 @@ builder.Configuration
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
 
+Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("InternalApiCors", policy =>

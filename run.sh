@@ -20,4 +20,5 @@ pkill -f Recycler.API
 cd "$TARGET_DIR" || exit 1
 cd Recycler.API
 export ASPNETCORE_ENVIRONMENT=Production
+rm -rf app.log
 nohup dotnet run > app.log 2>&1 &
