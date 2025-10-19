@@ -17,3 +17,6 @@ else
 fi
 
 pkill -f Recycler.API
+cd "$TARGET_DIR" || exit 1
+cd Recycler.API
+ASPNETCORE_ENVIRONMENT=Production dotnet run
