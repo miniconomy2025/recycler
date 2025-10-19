@@ -57,6 +57,7 @@ builder.Services.AddScoped<CommercialBankService, CommercialBankService>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddTransient<HttpLoggingHandler>();
+builder.Services.AddTransient<GlobalHeaderHandler>();
 
 builder.Services.AddHttpClient("test")
     .AddHttpMessageHandler<HttpLoggingHandler>()
