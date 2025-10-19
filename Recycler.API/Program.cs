@@ -30,7 +30,12 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
+builder.Configuration
+    .AddEnvironmentVariables()
+    .AddUserSecrets<Program>()
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddCors(options =>
 {
