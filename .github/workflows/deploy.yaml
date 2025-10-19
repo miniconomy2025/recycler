@@ -16,27 +16,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-    
-      # - name: Set up .NET 9
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: 9.0.x
-      # - name: Restore API
-      #   run: |
-      #     cd Recycler.API
-      #     dotnet restore
-
-      # - name: Build API
-      #   run: |
-      #     cd Recycler.API
-      #     dotnet publish --runtime linux-x64
-      # ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com "sudo pkill -f Recycler.API"
-      # scp -r -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" Recycler.API/bin/Release/net9.0/linux-x64/publish ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com:~/
 
       - name: Deploy
         run: |
-          scp -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" run.sh ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com:~/
-          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@ec2-54-198-165-128.compute-1.amazonaws.com "sudo chmod +x run.sh && sudo ./run.sh"
+          scp -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" run.sh ec2-user@api.recycler.susnet.co.za:~/
+          ssh -o StrictHostKeyChecking=no -i "~/.ssh/id_rsa" ec2-user@api.recycler.susnet.co.za "sudo chmod +x run.sh && sudo ./run.sh"
     env:
       SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
       SERVER_CONFIG: ${{secrets.SERVER_CONFIG}}

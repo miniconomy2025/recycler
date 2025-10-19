@@ -117,7 +117,7 @@ export class CdkRecylerStack extends cdk.Stack {
     const apiARecord = new route53.ARecord(this, 'apiARecord', {
       target: route53.RecordTarget.fromIpAddresses(ec2Instance.instancePublicIp),
       zone: hostedZone,
-      recordName: 'recycler',
+      recordName: apiSubDomain,
       ttl: cdk.Duration.minutes(5)
     })
   }

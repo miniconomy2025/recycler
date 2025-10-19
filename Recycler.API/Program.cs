@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Npgsql;
 using Recycler.API;
 using Recycler.API.Services;
 using Recycler.API.Utils;
@@ -11,33 +12,6 @@ using Recycler.API.Utils;
 CultureInfo.CurrentCulture = new CultureInfo("en-ZA") { NumberFormat = { NumberDecimalSeparator = "." } };
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ConfigureHttpsDefaults(httpsOptions =>
-    {
-        httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-        httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
-
-        var rootCa = X509CertificateLoader.LoadCertificateFromFile("certs/root-ca.der");
-
-        httpsOptions.ClientCertificateValidation = (cert, chain, errors) =>
-        {
-            var chainPolicy = new X509ChainPolicy
-            {
-                RevocationMode = X509RevocationMode.NoCheck,
-                VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority
-                                    | X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown
-                                    | X509VerificationFlags.IgnoreEndRevocationUnknown,
-            };
-            chainPolicy.ExtraStore.Add(rootCa);
-            bool isValid = chain.Build(cert); chain.ChainPolicy = chainPolicy;
-            Console.WriteLine($"Kestrel validation: {isValid}, Subject: {cert.Subject}");
-
-            return chain.Build(cert);
-        };
-    });
-});
 
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
@@ -63,10 +37,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("InternalApiCors", policy =>
     {
         policy
-            .WithOrigins("https://recycler.projects.bbdgrad.com")
+            .WithOrigins("*")
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyMethod();
     });
 });
 
@@ -80,56 +53,10 @@ builder.Services.AddScoped<CommercialBankService, CommercialBankService>();
 
 builder.Services.AddHttpClient();
 
-builder.Services
-    .AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
-    .AddCertificate(options =>
-    {
-        options.AllowedCertificateTypes = CertificateTypes.All;
-        options.ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust;
-        options.CustomTrustStore.Add(new X509Certificate2("certs/root-ca.der"));
-        options.RevocationMode = X509RevocationMode.NoCheck;
-
-        options.Events = new CertificateAuthenticationEvents
-        {
-            OnCertificateValidated = context =>
-            {
-                Console.WriteLine("OnCertificateValidated triggered");
-                Console.WriteLine($"Subject: {context.ClientCertificate.Subject}");
-
-                context.Principal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject),
-                    new Claim(ClaimTypes.Name, context.ClientCertificate.Subject),
-                }, context.Scheme.Name));
-
-                context.Success();
-                return Task.CompletedTask;
-            },
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine("OnAuthenticationFailed triggered");
-                Console.WriteLine($"Reason: {context.Exception?.Message}");
-                context.Fail("Invalid certificate");
-                return Task.CompletedTask;
-            }
-        };
-    });
-
 builder.Services.AddTransient<HttpLoggingHandler>();
 
 builder.Services.AddHttpClient("test")
-    .AddHttpMessageHandler<HttpLoggingHandler>()
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var cert = new X509Certificate2("certs/client.pfx", "1234",
-    X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.Exportable);
-
-        return new HttpClientHandler
-        {
-            ClientCertificates = { cert },
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        };
-    });
+    .AddHttpMessageHandler<HttpLoggingHandler>();
 
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -176,5 +103,26 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/healthz");
+
+
+//Migrations to run
+bool Migrations = true;
+if (Migrations)
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    // Folder where SQL files live
+    var migrationFolder = Path.Combine(AppContext.BaseDirectory, "dbMigrations");
+Console.WriteLine($"Folder exists? {Directory.Exists(migrationFolder)}");
+    // Run each file
+    foreach (var file in Directory.GetFiles(migrationFolder, "*.sql").OrderBy(f => f))
+    {
+        var sql = await File.ReadAllTextAsync(file);
+        await using var conn = new NpgsqlConnection(connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        await cmd.ExecuteNonQueryAsync();
+        Console.WriteLine($"Executed migration: {Path.GetFileName(file)}");
+    }
+}
 
 await app.RunAsync();
