@@ -15,3 +15,5 @@ else
     git fetch origin
     git reset --hard origin/main   # or replace 'main' with your default branch
 fi
+
+pkill -f Recycler.API
