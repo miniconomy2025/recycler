@@ -25,6 +25,7 @@ builder.Services.AddScoped<SimulationBootstrapService>();
 builder.Services.AddScoped<BankAccountService>();
 builder.Services.AddScoped<LoanService>();
 builder.Services.AddScoped<MachineMarketService>();
+builder.Services.AddScoped<ISimulationBootstrapService, SimulationBootstrapService>();
 
 builder.Services.AddOpenApi();
 
