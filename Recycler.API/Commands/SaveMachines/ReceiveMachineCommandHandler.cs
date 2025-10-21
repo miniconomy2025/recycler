@@ -28,16 +28,6 @@ namespace Recycler.API
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await connection.OpenAsync(cancellationToken);
 
-            // var existingMachineSql = "SELECT id, machine_id, received_at, is_operational FROM Machines WHERE machine_id = @MachineId;";
-            // var existingMachine = await connection.QueryFirstOrDefaultAsync<ReceivedMachineDto>(existingMachineSql, new { MachineId = request.ModelName });
-
-            // if (existingMachine != null)
-            // {
-            //     Console.WriteLine($"Warning: Machine with ThoH ID {request.ModelName} already exists in Machines table (Recycler ID: {existingMachine.Id}). Not adding duplicate.");
-            //     return existingMachine;
-            // }
-            // else
-            // {
             var insertSql = @"
                     INSERT INTO Machines (machine_id, received_at, is_operational)
                     VALUES (@MachineId, @ReceivedAt, @Status)
@@ -60,7 +50,6 @@ namespace Recycler.API
                 MachineId = 1,
                 ReceivedAt = DateTime.UtcNow
             };
-            // }
         }
     }
 }

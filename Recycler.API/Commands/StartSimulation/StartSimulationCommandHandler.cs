@@ -8,18 +8,18 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
     private readonly HttpClient _http;
     private readonly ISimulationClock _clock;
     private readonly IDatabaseResetService _resetService;
-    private readonly SimulationBootstrapService _bootstrap;
+    private readonly ISimulationBootstrapService _bootstrapService;
 
     public StartSimulationCommandHandler(
         IHttpClientFactory httpFactory,
         ISimulationClock clock,
         IDatabaseResetService resetService,
-        SimulationBootstrapService bootstrap)
+        ISimulationBootstrapService bootstrapService)
     {
         _http = httpFactory.CreateClient("test");
         _clock = clock;
         _resetService = resetService;
-        _bootstrap = bootstrap;
+        _bootstrapService = bootstrapService;
     }
     public async Task<StartSimulationResponse> Handle(StartSimulationCommand request, CancellationToken cancellationToken)
     {
@@ -30,7 +30,7 @@ public class StartSimulationCommandHandler : IRequestHandler<StartSimulationComm
 
         _clock.Start(realStart);
 
-        _ = Task.Run(() => _bootstrap.RunAsync(CancellationToken.None));
+        _ = Task.Run(() => _bootstrapService.RunAsync(CancellationToken.None));
 
         var simTime = _clock.GetCurrentSimulationTime();
 

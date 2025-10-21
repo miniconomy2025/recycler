@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Recycler.API.Services;
 
-public class SimulationBootstrapService
+public class SimulationBootstrapService :  ISimulationBootstrapService
 {
     private readonly IConfiguration _config;
     private readonly ICommercialBankService _bankService;
@@ -12,6 +12,7 @@ public class SimulationBootstrapService
     private readonly BankAccountService _accountService;
     private readonly LoanService _loanService;
     private readonly MachineMarketService _marketService;
+    private readonly ISimulationBootstrapService _bootstrapService;
 
     public SimulationBootstrapService(
         IConfiguration config,
@@ -20,7 +21,8 @@ public class SimulationBootstrapService
         MakePaymentService paymentService,
         BankAccountService accountService,
         LoanService loanService,
-        MachineMarketService marketService)
+        MachineMarketService marketService,
+        ISimulationBootstrapService bootstrapService)
     {
         _config = config;
         _bankService = bankService;
@@ -29,6 +31,7 @@ public class SimulationBootstrapService
         _accountService = accountService;
         _loanService = loanService;
         _marketService = marketService;
+        _bootstrapService = bootstrapService;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken)
