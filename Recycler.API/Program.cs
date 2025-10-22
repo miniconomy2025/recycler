@@ -122,9 +122,12 @@ app.Use(async (context, next) =>
 
     // Reset the stream position so the next middleware can read it
     context.Request.Body.Position = 0;
+    if (context.Request.Path != "/logs")
+    {
+        Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
+        Console.WriteLine($"\nBODY:\n{body}\n");
+    }
 
-    Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
-    Console.WriteLine($"\nBODY:\n{body}\n");
 
     await next();
 });
@@ -156,4 +159,18 @@ if (Migrations)
     }
 }
 
+//Get logs constantly
+app.MapGet("/logs", async (HttpContext context) =>
+{
+    var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "app.log");
+
+    if (!File.Exists(logFilePath))
+    {
+        context.Response.StatusCode = 404;
+        return Results.NotFound("Log file not found");
+    }
+
+    var logContent = await File.ReadAllTextAsync(logFilePath);
+    return Results.Text(logContent, "text/plain");
+});
 await app.RunAsync();
