@@ -29,23 +29,28 @@ builder.Services.AddOpenApi(config =>
 {
     config.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        document.Servers = new[]
+        var servers = new List<Microsoft.OpenApi.Models.OpenApiServer>
         {
             new Microsoft.OpenApi.Models.OpenApiServer
             {
                 Url = "https://api.recycler.susnet.co.za",
                 Description = "Production Server"
-            },
-            new Microsoft.OpenApi.Models.OpenApiServer
+            }
+        };
+
+        if (!builder.Environment.IsProduction())
+        {
+            servers.Add(new Microsoft.OpenApi.Models.OpenApiServer
             {
                 Url = "http://localhost:5000",
                 Description = "Local Development"
-            }
-        };
+            });
+        }
+
+        document.Servers = servers;
         return Task.CompletedTask;
     });
 });
-
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 builder.Configuration
