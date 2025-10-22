@@ -125,6 +125,10 @@ app.Use(async (context, next) =>
     if (context.Request.Path != "/logs")
     {
         Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
+        foreach (var header in context.Request.Headers)
+        {
+            if (header.Key == "Client-Id") Console.WriteLine($"  {header.Key}: {header.Value}");
+        }
         Console.WriteLine($"\nBODY:\n{body}\n");
     }
 
