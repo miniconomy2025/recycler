@@ -124,12 +124,17 @@ app.Use(async (context, next) =>
     context.Request.Body.Position = 0;
     if (context.Request.Path != "/logs")
     {
-        Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
+        String clientid = "";
         foreach (var header in context.Request.Headers)
         {
-            if (header.Key == "Client-Id") Console.WriteLine($"  {header.Key}: {header.Value}");
+            if (header.Key == "Client-Id") clientid = $"{header.Value}";
         }
-        Console.WriteLine($"\nBODY:\n{body}\n");
+        if (clientid != "thoh")
+        {
+            Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
+            Console.WriteLine($"FROM:\t{clientid}");
+            Console.WriteLine($"\nBODY:\n{body}\n");
+        }
     }
 
 
