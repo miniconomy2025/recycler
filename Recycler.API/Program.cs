@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using Npgsql;
 using Recycler.API;
 using Recycler.API.Services;
@@ -69,18 +70,14 @@ builder.Services.AddHttpClient("test")
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 new Startup(builder).ConfigureApplication();
-
 var app = builder.Build();
-app.MapOpenApi();
 
+app.MapOpenApi();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "MiniConomy Recycler API v1");
-    // options.ConfigObject.Urls =
-    // [
-    //     new UrlDescriptor { Name = "Production", Url = "/" },
-    // ];
 });
+
 
 app.Use(async (context, next) =>
 {
