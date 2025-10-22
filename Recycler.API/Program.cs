@@ -76,10 +76,10 @@ app.MapOpenApi();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "MiniConomy Recycler API v1");
-    options.ConfigObject.Urls =
-    [
-        new UrlDescriptor { Name = "Production", Url = "https://api.recycler.susnet.co.za" },
-    ];
+    // options.ConfigObject.Urls =
+    // [
+    //     new UrlDescriptor { Name = "Production", Url = "/" },
+    // ];
 });
 
 app.Use(async (context, next) =>
