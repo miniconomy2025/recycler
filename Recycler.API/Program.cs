@@ -25,7 +25,26 @@ builder.Services.AddScoped<LoanService>();
 builder.Services.AddScoped<MachineMarketService>();
 builder.Services.AddScoped<ISimulationBootstrapService, SimulationBootstrapService>();
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(config =>
+{
+    config.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Servers = new[]
+        {
+            new Microsoft.OpenApi.Models.OpenApiServer
+            {
+                Url = "https://api.recycler.susnet.co.za",
+                Description = "Production Server"
+            },
+            new Microsoft.OpenApi.Models.OpenApiServer
+            {
+                Url = "http://localhost:5000",
+                Description = "Local Development"
+            }
+        };
+        return Task.CompletedTask;
+    });
+});
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
@@ -72,7 +91,9 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 new Startup(builder).ConfigureApplication();
 var app = builder.Build();
 
+
 app.MapOpenApi();
+
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "MiniConomy Recycler API v1");
