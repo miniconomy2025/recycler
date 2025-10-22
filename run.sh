@@ -2,6 +2,9 @@ yum update -y
 yum install git -y
 yum install dotnet-sdk-9.0 -y
 yum install postgresql17-server.x86_64 -y
+yum install nginx -y
+yum install certbot -y
+yum install python3-certbot-nginx -y
 # /usr/bin/postgresql-setup --initdb
 # systemctl enable postgresql
 # systemctl start postgresql

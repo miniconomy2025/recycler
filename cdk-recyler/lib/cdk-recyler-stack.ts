@@ -22,11 +22,6 @@ export class CdkRecylerStack extends cdk.Stack {
       zoneName: domainName
     })
 
-    // const apiCertificate = new certificatemanager.Certificate(this, "ApiRecyclerCert", {
-    //   domainName: [apiSubDomain, domainName].join('.'),
-    //   validation: certificatemanager.CertificateValidation.fromDns(hostedZone),
-    // });
-
     //GENERAL
     const generalVpc = new ec2.Vpc(this, 'generalVpc', {
       maxAzs: 1, // Only 1 AZ = cheapest
@@ -63,10 +58,10 @@ export class CdkRecylerStack extends cdk.Stack {
       keyPair: ec2.KeyPair.fromKeyPairName(this, 'keyPair', 'ec2-key-pair')
     })
 
-    // const apiARecord = new route53.ARecord(this, 'ApiARecord', {
-    //   zone: hostedZone,
-    //   recordName: apiSubDomain,
-    //   target: route53.RecordTarget.fromIpAddresses(ec2Instance.instancePublicIp),
-    // });
+    const apiARecord = new route53.ARecord(this, 'ApiARecord', {
+      zone: hostedZone,
+      recordName: apiSubDomain,
+      target: route53.RecordTarget.fromIpAddresses(ec2Instance.instancePublicIp),
+    });
   }
 }

@@ -4,6 +4,7 @@ using Npgsql;
 using Recycler.API;
 using Recycler.API.Services;
 using Recycler.API.Utils;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 CultureInfo.CurrentCulture = new CultureInfo("en-ZA") { NumberFormat = { NumberDecimalSeparator = "." } };
 
@@ -75,6 +76,10 @@ app.MapOpenApi();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "MiniConomy Recycler API v1");
+    options.ConfigObject.Urls =
+    [
+        new UrlDescriptor { Name = "Production", Url = "https://api.recycler.susnet.co.za" },
+    ];
 });
 
 app.Use(async (context, next) =>
