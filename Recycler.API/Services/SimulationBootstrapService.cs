@@ -12,7 +12,6 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
     private readonly BankAccountService _accountService;
     private readonly LoanService _loanService;
     private readonly MachineMarketService _marketService;
-    private readonly ISimulationBootstrapService _bootstrapService;
 
     public SimulationBootstrapService(
         IConfiguration config,
@@ -21,8 +20,7 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
         MakePaymentService paymentService,
         BankAccountService accountService,
         LoanService loanService,
-        MachineMarketService marketService,
-        ISimulationBootstrapService bootstrapService)
+        MachineMarketService marketService)
     {
         _config = config;
         _bankService = bankService;
@@ -31,7 +29,6 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
         _accountService = accountService;
         _loanService = loanService;
         _marketService = marketService;
-        _bootstrapService = bootstrapService;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken)

@@ -1,7 +1,22 @@
 yum update -y
 yum install git -y
-dnf install dotnet-sdk-9.0 -y
+yum install dotnet-sdk-9.0 -y
+yum install postgresql17-server.x86_64 -y
+# /usr/bin/postgresql-setup --initdb
+# systemctl enable postgresql
+# systemctl start postgresql
 
+# sudo -i -u postgres
+# psql
+# CREATE DATABASE recycler;
+# CREATE USER myuser WITH ENCRYPTED PASSWORD 'somepassword';
+# GRANT ALL PRIVILEGES ON DATABASE recycler TO myuser;
+# ALTER ROLE myuser SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN REPLICATION BYPASSRLS;
+
+# echo "listen_addresses = '*'" >> /var/lib/pgsql/data/postgresql.conf
+# echo "host    all    all    0.0.0.0/0    md5" >> /var/lib/pgsql/data/pg_hba.conf
+
+systemctl restart postgresql
 REPO_URL="https://github.com/miniconomy2025/recycler.git"
 TARGET_DIR="/home/ec2-user/recycler"
 
