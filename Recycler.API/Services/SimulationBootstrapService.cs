@@ -102,7 +102,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
                 order.OrderId, order.BankAccount);
 
             _logger.LogInformation("Step 5: Processing payment - Amount: {Amount}, Description: {Description}",
-                totalCost, order.OrderId.ToString());
+                totalCost, order.OrderId.ToString()); 
 
             var payment = await paymentService.SendPaymentAsync(
                 toAccountNumber: "000000000000", //Hardcoded thoh bank account
