@@ -76,7 +76,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             _logger.LogInformation("Found recycling machine: {MachineName}, Price: {Price}, Production Rate: {ProductionRate}",
                 machine.machineName, machine.price, machine.productionRate);
 
-            var totalCost = machine.price * 2;
+            var totalCost = machine.price * 2; 
             var loanAmount = totalCost + 10000;
             _logger.LogInformation("Step 3: Calculating costs - Machine cost: {MachineCost}, Total cost for 2 machines: {TotalCost}, Loan amount: {LoanAmount}",
                 machine.price, totalCost, loanAmount);
