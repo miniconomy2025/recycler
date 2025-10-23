@@ -29,7 +29,7 @@ public class MachinePaymentConfirmationController(
 
             var pickupCommand = new CreatePickupRequestCommand
             {
-                originalExternalOrder = body.OrderId,
+                originalExternalOrderId = body.OrderId,
                 originCompany = thoHCompany,
                 destinationCompany = recyclerCompany,
                 items = new List<PickupItem>
