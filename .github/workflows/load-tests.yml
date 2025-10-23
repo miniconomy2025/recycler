@@ -2,12 +2,12 @@ name: Full Load Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop ]
     paths:
       - 'Recycler.API/**'
       - 'Recycler.API.LoadTests/**'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ develop ]
     paths:
       - 'Recycler.API/**'
       - 'Recycler.API.LoadTests/**'
