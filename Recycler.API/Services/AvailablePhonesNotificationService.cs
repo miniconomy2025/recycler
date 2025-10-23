@@ -30,7 +30,7 @@ public class AvailablePhonesNotificationService
 
     public async Task<NotifyResult> NotifyAsync(HttpContext? httpContext = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Notify flow started: fetching recycled phones from THoH");
+        _logger.LogInformation("Notify flow started: fetching broken phones from THoH");
 
         var phones = await _thohService.GetAvailableRecycledPhonesAsync();
 
@@ -38,8 +38,8 @@ public class AvailablePhonesNotificationService
 
         if (phones is null || phones.Count == 0)
         {
-            _logger.LogInformation("No recycled phones available from THoH. Ending notify flow.");
-            return new NotifyResult(false, "No recycled phones received from THoH.", new List<object>());
+            _logger.LogInformation("No broken phones available from THoH. Ending notify flow.");
+            return new NotifyResult(false, "No broken phones received from THoH.", new List<object>());
         }
 
         var results = new List<object>();
