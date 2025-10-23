@@ -1,20 +1,23 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Recycler.API;
 using Recycler.API.Commands;
-using MediatR;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Recycler.Tests.Commands.ProcessLogistics
 {
-        public class ProcessConsumerDeliveryNotificationCommandHandlerTests
+    public class ProcessConsumerDeliveryNotificationCommandHandlerTests
     {
         private readonly IConfiguration _configuration;
+        private readonly Mock<ILogger<ProcessConsumerDeliveryNotificationCommandHandler>> _mockLogger;
         private const string ConnectionString = "Host=localhost;Database=testdb;Username=test;Password=test";
 
         public ProcessConsumerDeliveryNotificationCommandHandlerTests()
         {
-            // Create a real IConfiguration with in-memory settings
             var inMemorySettings = new Dictionary<string, string>
             {
                 {"ConnectionStrings:DefaultConnection", ConnectionString}
@@ -23,13 +26,14 @@ namespace Recycler.Tests.Commands.ProcessLogistics
             _configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
+
+            _mockLogger = new Mock<ILogger<ProcessConsumerDeliveryNotificationCommandHandler>>();
         }
 
         [Fact]
         public async Task Handle_WhenStatusIsNotDelivered_ReturnsDeliveryNotProcessedMessage()
         {
-            // Arrange
-            var handler = new ProcessConsumerDeliveryNotificationCommandHandler(_configuration);
+            var handler = new ProcessConsumerDeliveryNotificationCommandHandler(_configuration, _mockLogger.Object);
             var command = new ProcessConsumerDeliveryNotificationCommand
             {
                 Status = "pending",
@@ -37,10 +41,8 @@ namespace Recycler.Tests.Commands.ProcessLogistics
                 Quantity = 5
             };
 
-            // Act
             var result = await handler.Handle(command, CancellationToken.None);
 
-            // Assert
             Assert.NotNull(result);
             Assert.Equal("Delivery not processed", result.Message);
         }
@@ -52,8 +54,7 @@ namespace Recycler.Tests.Commands.ProcessLogistics
         [InlineData("")]
         public async Task Handle_WhenStatusIsNotDelivered_WithVariousStatuses_ReturnsDeliveryNotProcessedMessage(string status)
         {
-            // Arrange
-            var handler = new ProcessConsumerDeliveryNotificationCommandHandler(_configuration);
+            var handler = new ProcessConsumerDeliveryNotificationCommandHandler(_configuration, _mockLogger.Object);
             var command = new ProcessConsumerDeliveryNotificationCommand
             {
                 Status = status,
@@ -61,10 +62,8 @@ namespace Recycler.Tests.Commands.ProcessLogistics
                 Quantity = 5
             };
 
-            // Act
             var result = await handler.Handle(command, CancellationToken.None);
 
-            // Assert
             Assert.NotNull(result);
             Assert.Equal("Delivery not processed", result.Message);
         }
@@ -76,8 +75,7 @@ namespace Recycler.Tests.Commands.ProcessLogistics
         [InlineData("DeLiVeReD")]
         public async Task Handle_WhenStatusIsDeliveredWithVariousCasing_AttemptsProcessing(string status)
         {
-            // Arrange
-            var handler = new ProcessConsumerDeliveryNotificationCommandHandler(_configuration);
+            var handler = new ProcessConsumerDeliveryNotificationCommandHandler(_configuration, _mockLogger.Object);
             var command = new ProcessConsumerDeliveryNotificationCommand
             {
                 Status = status,
@@ -85,14 +83,9 @@ namespace Recycler.Tests.Commands.ProcessLogistics
                 Quantity = 5
             };
 
-            // Act 
-            // This will attempt database connection and likely fail without a real database
             var result = await handler.Handle(command, CancellationToken.None);
             
-            // Assert
-            // Should not return "Delivery not processed" since status check passed
             Assert.NotEqual("Delivery not processed", result.Message);
         }
     }
-    }
-
+}
