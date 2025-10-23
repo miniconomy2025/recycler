@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
-import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam'; // Add IAM import for bucket policy
@@ -53,39 +54,39 @@ export class CdkRecylerStack extends cdk.Stack {
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(22), "SSH");
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(5432), "POSTGRES"); // optional
 
-    //FRONT ENED STUFF
+    //FRONT END STUFF
     const websiteBucket = new s3.Bucket(this, 'WebsiteBucket', {
       bucketName: `recycler-website-${cdk.Stack.of(this).account}`,
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Use RETAIN for production
-      autoDeleteObjects: true, // Only use with DESTROY policy
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'error.html',
-      publicReadAccess: false, // CloudFront will access via OAI
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL
     });
 
+    const oai = new cloudfront.OriginAccessIdentity(this, 'WebsiteOAI');
+    websiteBucket.grantRead(oai);
+
     // Add this after the S3 bucket
-    const distribution = new Distribution(this, 'WebsiteDistribution', {
+    const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
       defaultBehavior: {
-        origin: new S3Origin(websiteBucket),
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        origin: new S3Origin(websiteBucket, { originAccessIdentity: oai }),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+        },
+      ],
       domainNames: [domainName],
       certificate: certificate,
       defaultRootObject: 'index.html',
     });
-
-    // GRANT CLOUDFRONT ACCESS TO S3 BUCKET
-      websiteBucket.addToResourcePolicy(new iam.PolicyStatement({
-        actions: ['s3:GetObject'],
-        resources: [websiteBucket.arnForObjects('*')],
-        principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
-        conditions: {
-          StringEquals: {
-            'AWS:SourceArn': `arn:aws:cloudfront::${cdk.Stack.of(this).account}:distribution/${distribution.distributionId}`,
-          },
-        },
-      }));
 
     const websiteARecord = new route53.ARecord(this, 'websiteARecord', {
       zone: hostedZone,
