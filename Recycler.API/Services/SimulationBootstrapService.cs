@@ -39,6 +39,9 @@ public class SimulationBootstrapService : ISimulationBootstrapService
 
     public async Task RunAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Waiting 1 minute before starting simulation bootstrap...");
+        await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+
         using var scope = _scopeFactory.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         var paymentService = scope.ServiceProvider.GetRequiredService<MakePaymentService>();
