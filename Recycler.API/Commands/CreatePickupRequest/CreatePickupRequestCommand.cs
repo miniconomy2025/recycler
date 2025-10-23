@@ -9,7 +9,7 @@ namespace Recycler.API.Commands.CreatePickupRequest
 {
     public class CreatePickupRequestCommand : IRequest<CreatePickupRequestResponse>
     {
-        public string originalExternalOrder { get; set; } = default!;
+        public string originalExternalOrderId { get; set; } = default!;
         public string originCompany { get; set; } = default!;
         public string destinationCompany { get; set; } = default!;
         public List<PickupItem> items { get; set; } = new();

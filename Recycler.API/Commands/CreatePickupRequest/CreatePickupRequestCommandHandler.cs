@@ -29,7 +29,7 @@ public class CreatePickupRequestCommandHandler : IRequestHandler<CreatePickupReq
 
             var pickupRequest = new
             {
-                originalExternalOrder = request.originalExternalOrder,
+                originalExternalOrderId = request.originalExternalOrderId,
                 originCompany = request.originCompany,
                 destinationCompany = request.destinationCompany,
                 items = request.items.Select(item => new

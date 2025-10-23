@@ -77,7 +77,7 @@ namespace Recycler.Tests.Commands
 
             var command = new CreatePickupRequestCommand
             {
-                originalExternalOrder = "ORD-001",
+                originalExternalOrderId = "ORD-001",
                 originCompany = "Pear",
                 destinationCompany = "BulkLogistics",
                 items = new List<PickupItem>
@@ -113,7 +113,7 @@ namespace Recycler.Tests.Commands
 
             var command = new CreatePickupRequestCommand
             {
-                originalExternalOrder = "ORD-002",
+                originalExternalOrderId = "ORD-002",
                 originCompany = "Pear",
                 destinationCompany = "BulkLogistics",
                 items = new List<PickupItem>
@@ -147,7 +147,7 @@ namespace Recycler.Tests.Commands
 
             var command = new CreatePickupRequestCommand
             {
-                originalExternalOrder = "ORD-003",
+                originalExternalOrderId = "ORD-003",
                 originCompany = "Pear",
                 destinationCompany = "BulkLogistics",
                 items = new List<PickupItem>
@@ -184,7 +184,7 @@ namespace Recycler.Tests.Commands
 
             var command = new CreatePickupRequestCommand
             {
-                originalExternalOrder = "ORD-004",
+                originalExternalOrderId = "ORD-004",
                 originCompany = "Pear",
                 destinationCompany = "BulkLogistics",
                 items = new List<PickupItem>

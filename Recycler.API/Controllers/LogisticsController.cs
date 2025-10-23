@@ -41,7 +41,7 @@ namespace Recycler.API.Controllers
 
                 var command = new ProcessLogisticsCommand
                 {
-                    Id = requestDto.Id,
+                    Id = $"{requestDto.Id}",
                     Type = requestDto.Type,
                     Items = requestDto.Items
                 };
