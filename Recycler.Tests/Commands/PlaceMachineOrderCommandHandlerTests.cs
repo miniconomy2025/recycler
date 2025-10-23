@@ -5,6 +5,7 @@ using FluentAssertions;
 using Recycler.API.Commands;
 using Recycler.API.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -52,7 +53,8 @@ namespace Recycler.Tests.Commands
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
-            var handler = new PlaceMachineOrderCommandHandler(httpClientFactoryMock.Object, config);
+            var loggerMock = new Mock<ILogger<PlaceMachineOrderCommandHandler>>();
+            var handler = new PlaceMachineOrderCommandHandler(httpClientFactoryMock.Object, config, loggerMock.Object);
 
             var command = new PlaceMachineOrderCommand
             {
@@ -108,7 +110,8 @@ namespace Recycler.Tests.Commands
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
-            var handler = new PlaceMachineOrderCommandHandler(httpClientFactoryMock.Object, config);
+            var loggerMock = new Mock<ILogger<PlaceMachineOrderCommandHandler>>();
+            var handler = new PlaceMachineOrderCommandHandler(httpClientFactoryMock.Object, config, loggerMock.Object);
 
             var command = new PlaceMachineOrderCommand
             {
@@ -154,7 +157,8 @@ namespace Recycler.Tests.Commands
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
-            var handler = new PlaceMachineOrderCommandHandler(httpClientFactoryMock.Object, config);
+            var loggerMock = new Mock<ILogger<PlaceMachineOrderCommandHandler>>();
+            var handler = new PlaceMachineOrderCommandHandler(httpClientFactoryMock.Object, config, loggerMock.Object);
 
             var command = new API.Commands.PlaceMachineOrderCommand
             {
