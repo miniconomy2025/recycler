@@ -12,8 +12,6 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
     private readonly BankAccountService _accountService;
     private readonly LoanService _loanService;
     private readonly MachineMarketService _marketService;
-    private readonly ISimulationBootstrapService _bootstrapService;
-    private readonly ILogger<SimulationBootstrapService> _logger;
 
     public SimulationBootstrapService(
         IConfiguration config,
@@ -22,9 +20,7 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
         MakePaymentService paymentService,
         BankAccountService accountService,
         LoanService loanService,
-        MachineMarketService marketService,
-        ISimulationBootstrapService bootstrapService,
-        ILogger<SimulationBootstrapService> logger)
+        MachineMarketService marketService)
     {
         _config = config;
         _bankService = bankService;
@@ -33,86 +29,58 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
         _accountService = accountService;
         _loanService = loanService;
         _marketService = marketService;
-        _bootstrapService = bootstrapService;
-        _logger = logger;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Starting simulation bootstrap process");
+        Console.WriteLine("Starting simulation bootstrap process");
         
         try
         {
-            _logger.LogInformation("Step 1: Registering bank account with notification URL");
+            Console.WriteLine("Step 1: Registering bank account with notification URL");
             var notificationUrl = $"{_config["recyclerApi:baseUrl"]}{_config["recyclerApi:bankNotificationPath"]}";
-            _logger.LogInformation("Notification URL configured: {NotificationUrl}", notificationUrl);
+            Console.WriteLine($"Notification URL configured: {notificationUrl}");
             
             var accountNumber = await _accountService.RegisterAsync(notificationUrl, cancellationToken);
-            if (accountNumber == null) 
-            {
-                _logger.LogError("Failed to register bank account - received null account number");
-                throw new Exception("Failed to register bank account");
-            }
-            
-            _logger.LogInformation("Bank account registered successfully: {AccountNumber}", accountNumber);
+            if (accountNumber == null) throw new Exception("Failed to register bank account");
+            Console.WriteLine($"Bank account registered successfully: {accountNumber}");
+
             _bankService.AccountNumber = accountNumber;
 
-            _logger.LogInformation("Step 2: Fetching available recycling machines from market");
+            Console.WriteLine("Step 2: Fetching available recycling machines from market");
             var machine = await _marketService.GetRecyclingMachineAsync(cancellationToken);
-            if (machine == null) 
-            {
-                _logger.LogError("No recycling machines available in market");
-                throw new Exception("No recycling machines available");
-            }
-            
-            _logger.LogInformation("Found recycling machine: {MachineName}, Price: {Price}, Production Rate: {ProductionRate}", 
-                machine.machineName, machine.price, machine.productionRate);
+            if (machine == null) throw new Exception("No recycling machines available");
+            Console.WriteLine($"Found recycling machine: {machine.machineName}, Price: {machine.price}, Production Rate: {machine.productionRate}");
 
             var totalCost = machine.price * 2;
             var loanAmount = totalCost + 10000;
-            _logger.LogInformation("Step 3: Calculating costs - Machine cost: {MachineCost}, Total cost for 2 machines: {TotalCost}, Loan amount: {LoanAmount}", 
-                machine.price, totalCost, loanAmount);
+            Console.WriteLine($"Step 3: Calculating costs - Machine cost: {machine.price}, Total cost for 2 machines: {totalCost}, Loan amount: {loanAmount}");
             
             var loan = await _loanService.RequestLoanAsync(loanAmount, cancellationToken);
-            if (loan == null || !loan.success) 
-            {
-                _logger.LogError("Loan request failed - Loan: {LoanNumber}, Success: {Success}, Amount Remaining: {AmountRemaining}", 
-                    loan?.loan_number, loan?.success, loan?.amount_remaining);
-                throw new Exception("Loan request failed");
-            }
-            
-            _logger.LogInformation("Loan approved successfully: {LoanNumber}, Amount: {LoanAmount}", loan.loan_number, loanAmount);
+            if (loan == null || !loan.success) throw new Exception("Loan request failed");
+            Console.WriteLine($"Loan approved successfully: {loan.loan_number}, Amount: {loanAmount}");
 
-            _logger.LogInformation("Step 4: Placing machine order - Machine: {MachineName}, Quantity: 2", machine.machineName);
+            Console.WriteLine($"Step 4: Placing machine order - Machine: {machine.machineName}, Quantity: 2");
             var order = await _mediator.Send(new PlaceMachineOrderCommand
             {
                 machineName = machine.machineName,
                 quantity = 2
             }, cancellationToken);
-            
-            _logger.LogInformation("Machine order placed successfully - Order ID: {OrderId}, Bank Account: {BankAccount}", 
-                order.OrderId, order.BankAccount);
+            Console.WriteLine($"Machine order placed successfully - Order ID: {order.OrderId}, Bank Account: {order.BankAccount}");
 
-            _logger.LogInformation("Step 5: Processing payment - Amount: {Amount}, Description: {Description}", 
-                totalCost, order.OrderId.ToString());
-            
+            Console.WriteLine($"Step 5: Processing payment - Amount: {totalCost}, Description: {order.OrderId}");
             var payment = await _paymentService.SendPaymentAsync(
                 toAccountNumber: order.BankAccount ?? "",
                 amount: totalCost,
                 description: order.OrderId.ToString(),
                 cancellationToken: cancellationToken);
-            
-            _logger.LogInformation("Payment processed successfully - Transaction: {TransactionNumber}", payment.transaction_number);
+            Console.WriteLine($"Payment processed successfully - Transaction: {payment.transaction_number}");
 
-            _logger.LogInformation("Simulation bootstrap completed successfully - Loan: {LoanNumber}, Transaction: {TransactionNumber}", 
-                loan.loan_number, payment.transaction_number);
-            Console.WriteLine($"Bootstrapped simulation. Loan: {loan.loan_number}, Tx: {payment.transaction_number}");
+            Console.WriteLine($"Simulation bootstrap completed successfully - Loan: {loan.loan_number}, Transaction: {payment.transaction_number}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Simulation bootstrap failed: {ErrorMessage}", ex.Message);
             Console.WriteLine($"Bootstrap failed: {ex.Message}");
-            throw;
         }
     }
 }
