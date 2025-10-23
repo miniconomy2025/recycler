@@ -42,6 +42,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
         using var scope = _scopeFactory.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         var paymentService = scope.ServiceProvider.GetRequiredService<MakePaymentService>();
+        var bankService = scope.ServiceProvider.GetRequiredService<ICommercialBankService>();
         var accountService = scope.ServiceProvider.GetRequiredService<BankAccountService>();
         var loanService = scope.ServiceProvider.GetRequiredService<LoanService>();
         var marketService = scope.ServiceProvider.GetRequiredService<MachineMarketService>();
@@ -54,7 +55,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             var notificationUrl = $"{_config["recyclerApi:baseUrl"]}{_config["recyclerApi:bankNotificationPath"]}";
             _logger.LogInformation("Notification URL configured: {NotificationUrl}", notificationUrl);
 
-            var accountNumber = await _accountService.RegisterAsync(notificationUrl, cancellationToken);
+            var accountNumber = await accountService.RegisterAsync(notificationUrl, cancellationToken);
             if (accountNumber == null)
             {
                 _logger.LogError("Failed to register bank account - received null account number");
@@ -62,10 +63,10 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             }
 
             _logger.LogInformation("Bank account registered successfully: {AccountNumber}", accountNumber);
-            _bankService.AccountNumber = accountNumber;
+            bankService.AccountNumber = accountNumber;
 
             _logger.LogInformation("Step 2: Fetching available recycling machines from market");
-            var machine = await _marketService.GetRecyclingMachineAsync(cancellationToken);
+            var machine = await marketService.GetRecyclingMachineAsync(cancellationToken);
             if (machine == null)
             {
                 _logger.LogError("No recycling machines available in market");
@@ -91,7 +92,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             _logger.LogInformation("Loan approved successfully: {LoanNumber}, Amount: {LoanAmount}", loan.loan_number, loanAmount);
 
             _logger.LogInformation("Step 4: Placing machine order - Machine: {MachineName}, Quantity: 2", machine.machineName);
-            var order = await _mediator.Send(new PlaceMachineOrderCommand
+            var order = await mediator.Send(new PlaceMachineOrderCommand
             {
                 machineName = machine.machineName,
                 quantity = 2
@@ -103,7 +104,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             _logger.LogInformation("Step 5: Processing payment - Amount: {Amount}, Description: {Description}",
                 totalCost, order.OrderId.ToString());
 
-            var payment = await _paymentService.SendPaymentAsync(
+            var payment = await paymentService.SendPaymentAsync(
                 toAccountNumber: order.BankAccount ?? "",
                 amount: totalCost,
                 description: order.OrderId.ToString(),
