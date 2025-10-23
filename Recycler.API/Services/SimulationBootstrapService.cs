@@ -105,7 +105,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
                 totalCost, order.OrderId.ToString());
 
             var payment = await paymentService.SendPaymentAsync(
-                toAccountNumber: order.BankAccount ?? "",
+                toAccountNumber: "000000000000", //Hardcoded thoh bank account
                 amount: totalCost,
                 description: order.OrderId.ToString(),
                 cancellationToken: cancellationToken);
