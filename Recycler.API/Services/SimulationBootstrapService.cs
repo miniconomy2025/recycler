@@ -77,12 +77,12 @@ public class SimulationBootstrapService : ISimulationBootstrapService
                 machine.machineName, machine.price, machine.productionRate);
 
             var totalCost = machine.price * 2;
-            var loanAmount = totalCost + 10000;
-            _logger.LogInformation("Step 3: Calculating costs - Machine cost: {MachineCost}, Total cost for 2 machines: {TotalCost}, Loan amount: {LoanAmount}",
+            var loanAmount = totalCost + 5000000;
+            _logger.LogInformation("Step 3: Calculating costs - Machine cost: {MachineCost}, Total cost for 2 machines: {TotalCost}, Loan amount: {LoanAmount}", 
                 machine.price, totalCost, loanAmount);
-
-            var loan = await _loanService.RequestLoanAsync(loanAmount, cancellationToken);
-            if (loan == null || !loan.success)
+            
+            var loan = await _loanService.RequestLoanAsync(loanAmount, cancellationToken, minimumAmount: totalCost);
+            if (loan == null || !loan.success) 
             {
                 _logger.LogError("Loan request failed - Loan: {LoanNumber}, Success: {Success}, Amount Remaining: {AmountRemaining}",
                     loan?.loan_number, loan?.success, loan?.amount_remaining);
