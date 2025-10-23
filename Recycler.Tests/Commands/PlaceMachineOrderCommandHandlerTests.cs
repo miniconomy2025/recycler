@@ -25,7 +25,9 @@ namespace Recycler.Tests.Commands
             var mockHandler = new Mock<HttpMessageHandler>();
             var responseDto = new MachineOrderResponseDto
             {
-                Message = "Machine order placed successfully."
+                OrderId = 12345,
+                Message = "Machine order placed successfully.",
+                BankAccount = "000000001236"
             };
 
             var jsonResponse = JsonSerializer.Serialize(responseDto);

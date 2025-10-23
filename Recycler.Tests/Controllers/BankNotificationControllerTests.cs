@@ -73,7 +73,6 @@ namespace Recycler.Tests.Controllers
                 .Setup(r => r.GetByColumnValueAsync("name", "Approved"))
                 .ReturnsAsync(new List<OrderStatus> { approvedStatus });
 
-            // ✅ Fix: use ReturnsAsync(true) instead of Task.CompletedTask
             _orderRepoMock
                 .Setup(r => r.UpdateAsync(order, It.IsAny<List<string>>()))
                 .ReturnsAsync(true);
@@ -85,7 +84,6 @@ namespace Recycler.Tests.Controllers
             result.Should().BeOfType<OkResult>();
             order.OrderStatusId.Should().Be(2);
 
-            // ✅ Fix: column name case-insensitive
             _orderRepoMock.Verify(
                 r => r.UpdateAsync(
                     It.Is<Order>(o => o.Id == 1 && o.OrderStatusId == 2),
@@ -133,8 +131,6 @@ namespace Recycler.Tests.Controllers
 
             var result = await _controller.ReceiveNotification(notification);
 
-            // ✅ Fix: your controller sometimes returns ObjectResult instead of BadRequestObjectResult
-            // So we verify status code instead of strict type
             var badRequest = result as ObjectResult;
             badRequest.Should().NotBeNull();
             badRequest!.StatusCode.Should().Be(400);
@@ -209,7 +205,6 @@ namespace Recycler.Tests.Controllers
 
             var result = await _controller.ReceiveNotification(notification);
 
-            // ✅ same fix as above
             var objectResult = result as ObjectResult;
             objectResult.Should().NotBeNull();
             objectResult!.StatusCode.Should().Be(400);
@@ -237,7 +232,6 @@ namespace Recycler.Tests.Controllers
                 .Setup(r => r.GetByColumnValueAsync("name", "Approved"))
                 .ReturnsAsync(new List<OrderStatus> { approvedStatus });
 
-            // ✅ ThrowsAsync properly awaited
             _orderRepoMock
                 .Setup(r => r.UpdateAsync(order, It.IsAny<List<string>>()))
                 .ThrowsAsync(new Exception("Update operation failed"));
