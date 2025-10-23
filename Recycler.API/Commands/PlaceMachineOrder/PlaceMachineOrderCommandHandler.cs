@@ -76,7 +76,7 @@ namespace Recycler.API.Commands
                     _logger.LogWarning("THoH API returned null or invalid response. Using default fallback values.");
                     thoHResponse = new MachineOrderResponseDto
                     {
-                        Message = "Machine order placed successfully (default response).",
+                        Message = "Machine order placed successfully.",
                         OrderId = 0,
                         BankAccount = "000000000000"
                     };
