@@ -12,7 +12,6 @@ public class BankAccountService
         _http = factory.CreateClient("test");
         var bankUrl = config["commercialBankUrl"] ?? "http://localhost:8085";
         _http.BaseAddress = new Uri(bankUrl);
-        Console.WriteLine($"\n\n\n\n{_http.BaseAddress}\n\n\n\n");
         _logger = logger;
     }
 

@@ -81,14 +81,23 @@ builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<MakePaymentService, MakePaymentService>();
 builder.Services.AddScoped<CommercialBankService, CommercialBankService>();
 
-builder.Services.AddHttpClient();
-
-builder.Services.AddTransient<HttpLoggingHandler>();
 builder.Services.AddTransient<GlobalHeaderHandler>();
+builder.Services.AddTransient<HttpLoggingHandler>();
 
 builder.Services.AddHttpClient("test")
     .AddHttpMessageHandler<HttpLoggingHandler>()
     .AddHttpMessageHandler<GlobalHeaderHandler>()
+    .ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        return new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+    });
+
+builder.Services.AddHttpClient("internal")
+    .AddHttpMessageHandler<GlobalHeaderHandler>()
+    .RemoveAllLoggers()
     .ConfigurePrimaryHttpMessageHandler(() =>
     {
         return new HttpClientHandler
@@ -129,7 +138,7 @@ app.Use(async (context, next) =>
 
     // Reset the stream position so the next middleware can read it
     context.Request.Body.Position = 0;
-    if (context.Request.Path != "/logs")
+    if (context.Request.Path != "/logs" && !context.Request.Path.ToString().Contains("internal") && !context.Request.Path.ToString().Contains("openapi"))
     {
         String clientid = "";
         foreach (var header in context.Request.Headers)
