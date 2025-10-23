@@ -44,46 +44,49 @@ namespace Recycler.API.Commands
 
             try
             {
-                _logger.LogInformation("Sending machine order to THoH API endpoint: /machines");
+                _logger.LogInformation("Sending machine order to THoH API endpoint: /api/machines");
                 var response = await _httpClient.PostAsync("api/machines", httpContent, cancellationToken);
                 _logger.LogInformation("THoH API response status: {StatusCode}", response.StatusCode);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseMessage = "Machine order placed successfully.";
-                    if (response.Content != null)
-                    {
-                        var responseBody = await response.Content.ReadAsStringAsync();
-                        _logger.LogInformation("THoH API response body: {ResponseBody}", responseBody);
-                        
-                        if (!string.IsNullOrEmpty(responseBody))
-                        {
-                            try
-                            {
-                                var thoHResponse = JsonSerializer.Deserialize<MachineOrderResponseDto>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                                if (thoHResponse != null && !string.IsNullOrEmpty(thoHResponse.Message))
-                                {
-                                    responseMessage = thoHResponse.Message;
-                                    _logger.LogInformation("Parsed THoH response message: {Message}", thoHResponse.Message);
-                                }
-                            }
-                            catch (JsonException ex)
-                            {
-                                _logger.LogWarning(ex, "Failed to parse THoH response JSON");
-                            }
-                        }
-                    }
-                    
-                    _logger.LogInformation("Machine order placed successfully: {ResponseMessage}", responseMessage);
-                    return new MachineOrderResponseDto { Message = responseMessage };
-                }
-                else
+                if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     _logger.LogError("Machine order failed - Status: {StatusCode}, Content: {ErrorContent}", 
                         response.StatusCode, errorContent);
                     throw new HttpRequestException($"Failed to place machine order. Status: {response.StatusCode}, Content: {errorContent}");
                 }
+
+                var responseBody = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("THoH API response body: {ResponseBody}", responseBody);
+
+                MachineOrderResponseDto? thoHResponse = null;
+                try
+                {
+                    thoHResponse = JsonSerializer.Deserialize<MachineOrderResponseDto>(
+                        responseBody,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Failed to parse THoH response JSON. Falling back to default response.");
+                }
+
+                if (thoHResponse == null)
+                {
+                    _logger.LogWarning("THoH API returned null or invalid response. Using default fallback values.");
+                    thoHResponse = new MachineOrderResponseDto
+                    {
+                        Message = "Machine order placed successfully (default response).",
+                        OrderId = 0,
+                        BankAccount = "000000000000"
+                    };
+                }
+
+                _logger.LogInformation(
+                    "Machine order placed successfully: Message={Message}, OrderId={OrderId}, BankAccount={BankAccount}",
+                    thoHResponse.Message, thoHResponse.OrderId, thoHResponse.BankAccount);
+
+                return thoHResponse;
             }
             catch (HttpRequestException ex)
             {
@@ -91,5 +94,6 @@ namespace Recycler.API.Commands
                 throw new ApplicationException($"Error communicating with ThoH API: {ex.Message}", ex);
             }
         }
+
     }
 }
