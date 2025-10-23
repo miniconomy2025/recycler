@@ -83,18 +83,57 @@ public class InternalController(IHttpClientFactory factory) : ControllerBase
         return Ok(parsed);
     }
 
-    [HttpPost]
-    [Route("payback-a-loan")]
-    public async Task<IActionResult> PayBackALoan([FromBody] LoanPaymentRequest request)
+[HttpGet]
+[Route("payback-all-loans")]
+public async Task<IActionResult> PayBackAllLoan()
+{
+    // STEP 1: Get all loans
+    var response = await _http.GetAsync("https://commercial-bank-api.subspace.site/api/loan");
+    var json = await response.Content.ReadAsStringAsync();
+    var parsed = JsonDocument.Parse(json);
+
+    var loans = parsed.RootElement.GetProperty("loans");
+
+    var results = new List<object>();
+
+    // STEP 2: Loop through each loan
+    foreach (var loan in loans.EnumerateArray())
     {
-        var response = await _http.PostAsJsonAsync($"https://commercial-bank-api.subspace.site/api/loan/{request.loanNumber}/pay", new
+        var loanNumber = loan.GetProperty("loan_number").GetString();
+        var outstanding = loan.GetProperty("outstanding_amount").GetDecimal();
+
+        if (outstanding > 0)
         {
-            amount = request.Amount
-        });
-        var json = await response.Content.ReadAsStringAsync();
-        var parsed = JsonDocument.Parse(json);
-        return Ok(parsed);
+            // STEP 3: Pay back each loan
+            var payResponse = await _http.PostAsJsonAsync(
+                $"https://commercial-bank-api.subspace.site/api/loan/{loanNumber}/pay",
+                new { amount = outstanding }
+            );
+
+            var payJson = await payResponse.Content.ReadAsStringAsync();
+            results.Add(new
+            {
+                loanNumber,
+                paymentAttempt = JsonDocument.Parse(payJson)
+            });
+        }
+        else
+        {
+            results.Add(new
+            {
+                loanNumber,
+                paymentAttempt = "No outstanding balance"
+            });
+        }
     }
+
+    // STEP 4: Return summary
+    return Ok(new
+    {
+        message = "All loans processed",
+        results
+    });
+}
 }
 
 public class LoanRequest
