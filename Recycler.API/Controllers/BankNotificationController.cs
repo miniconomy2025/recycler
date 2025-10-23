@@ -33,7 +33,7 @@ public class BankNotificationController : ControllerBase
 
         try
         {
-            if (notification.status.ToLower() != "success")
+            if (!string.Equals(notification.status, "success", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("Ignoring failed payment for transaction {tx}", notification.transaction_number);
                 return Ok();
@@ -43,15 +43,18 @@ public class BankNotificationController : ControllerBase
 
             if (Guid.TryParse(notification.description, out orderNumber))
             {
-                // ✅ Already a valid GUID — use as is
+                // already valid GUID
             }
             else if (int.TryParse(notification.description, out int orderInt))
             {
-                // ✅ Convert int to GUID deterministically (e.g., hash it into a GUID)
-                // You can use a namespace-based UUID approach (e.g., MD5 or SHA1)
-                // But for simple use cases, here's one method:
+                var dbOrder = (await _orderRepository.GetByColumnValueAsync("id", orderInt)).FirstOrDefault();
+                if (dbOrder == null)
+                {
+                    _logger.LogError("Order with id {id} not found for numeric description.", orderInt);
+                    return BadRequest("Invalid order number format");
+                }
 
-                orderNumber = (await _orderRepository.GetByColumnValueAsync("id", orderInt)).FirstOrDefault().OrderNumber;
+                orderNumber = dbOrder.OrderNumber;
             }
             else
             {
@@ -72,23 +75,28 @@ public class BankNotificationController : ControllerBase
                 _logger.LogError("'Approved' status not configured in OrderStatus table.");
                 return StatusCode(500, "Order status configuration missing");
             }
+            
+            try
+            {
+                order.OrderStatusId = approvedStatus.Id;
+                await _orderRepository.UpdateAsync(order, new List<string> { "OrderStatusId" });
 
-            order.OrderStatusId = approvedStatus.Id;
-            await _orderRepository.UpdateAsync(order, ["OrderStatusId"]);
-
-            _logger.LogInformation("Order {orderId} marked as Approved due to payment", order.Id);
-
-
-            await _logService.CreateLog(HttpContext, notification, Ok());
+                _logger.LogInformation("Order {orderId} marked as Approved due to payment", order.Id);
+                await _logService.CreateLog(HttpContext, notification, Ok());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating order {id} after payment confirmation", order.Id);
+                await _logService.CreateLog(HttpContext, notification, StatusCode(500, "Internal error processing payment"));
+                return StatusCode(500, "Internal error processing payment");
+            }
 
             return Ok();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process payment notification");
-
             await _logService.CreateLog(HttpContext, notification, StatusCode(500, "Internal error processing payment"));
-
             return StatusCode(500, "Internal error processing payment");
         }
     }
