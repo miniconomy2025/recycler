@@ -17,4 +17,17 @@ public class InternalController(IHttpClientFactory factory) : ControllerBase
         var parsed = JsonDocument.Parse(json);
         return Ok(parsed);
     }
+
+    [HttpGet]
+    [Route("start-simulation")]
+    public async Task<IActionResult> PostStartSimulation()
+    {
+        var response = await _http.PostAsJsonAsync("https://api.recycler.susnet.co.za/simulation", new
+        {
+            epochStartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+        var json = await response.Content.ReadAsStringAsync();
+        var parsed = JsonDocument.Parse(json);
+        return Ok(parsed);
+    }
 }
