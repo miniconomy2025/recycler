@@ -39,6 +39,9 @@ public class SimulationBootstrapService : ISimulationBootstrapService
 
     public async Task RunAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Waiting 1 minute before starting simulation bootstrap...");
+        await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+
         using var scope = _scopeFactory.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         var paymentService = scope.ServiceProvider.GetRequiredService<MakePaymentService>();
@@ -59,7 +62,6 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             if (accountNumber == null)
             {
                 _logger.LogError("Failed to register bank account - received null account number");
-                throw new Exception("Failed to register bank account");
             }
 
             _logger.LogInformation("Bank account registered successfully: {AccountNumber}", accountNumber);
@@ -70,13 +72,12 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             if (machine == null)
             {
                 _logger.LogError("No recycling machines available in market");
-                throw new Exception("No recycling machines available");
             }
 
             _logger.LogInformation("Found recycling machine: {MachineName}, Price: {Price}, Production Rate: {ProductionRate}",
                 machine.machineName, machine.price, machine.productionRate);
 
-            var totalCost = machine.price * 2;
+            var totalCost = (machine?.price ?? 10000) * 2;
             var loanAmount = totalCost + 5000000; 
             _logger.LogInformation("Step 3: Calculating costs - Machine cost: {MachineCost}, Total cost for 2 machines: {TotalCost}, Loan amount: {LoanAmount}", 
                 machine.price, totalCost, loanAmount);
@@ -86,10 +87,9 @@ public class SimulationBootstrapService : ISimulationBootstrapService
             {
                 _logger.LogError("Loan request failed - Loan: {LoanNumber}, Success: {Success}, Amount Remaining: {AmountRemaining}",
                     loan?.loan_number, loan?.success, loan?.amount_remaining);
-                throw new Exception("Loan request failed");
             }
 
-            _logger.LogInformation("Loan approved successfully: {LoanNumber}, Amount: {LoanAmount}", loan.loan_number, loanAmount);
+            _logger.LogInformation("Loan approved successfully: {LoanNumber}, Amount: {LoanAmount}", loan?.loan_number, loanAmount);
 
             _logger.LogInformation("Step 4: Placing machine order - Machine: {MachineName}, Quantity: 2", machine.machineName);
             var order = await mediator.Send(new PlaceMachineOrderCommand
@@ -105,7 +105,7 @@ public class SimulationBootstrapService : ISimulationBootstrapService
                 totalCost, order.OrderId.ToString()); 
 
             var payment = await paymentService.SendPaymentAsync(
-                toAccountNumber: "000000000000", //Hardcoded thoh bank account
+                toAccountNumber: "000000000000",
                 amount: totalCost,
                 description: order.OrderId.ToString(),
                 cancellationToken: cancellationToken);

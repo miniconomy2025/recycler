@@ -36,10 +36,6 @@ namespace Recycler.Tests.Controllers
             };
         }
 
-        // --------------------------------------------------
-        // 🟢 ProcessGeneralLogisticsEvent tests
-        // --------------------------------------------------
-
         [Theory]
         [InlineData("PICKUP")]
         [InlineData("DELIVERY")]

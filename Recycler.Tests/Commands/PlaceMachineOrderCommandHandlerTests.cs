@@ -25,7 +25,9 @@ namespace Recycler.Tests.Commands
             var mockHandler = new Mock<HttpMessageHandler>();
             var responseDto = new MachineOrderResponseDto
             {
-                Message = "Machine order placed successfully."
+                OrderId = 12345,
+                Message = "Machine order placed successfully.",
+                BankAccount = "000000001236"
             };
 
             var jsonResponse = JsonSerializer.Serialize(responseDto);
@@ -70,16 +72,14 @@ namespace Recycler.Tests.Commands
             result.Message.Should().Be("Machine order placed successfully.");
 
             mockHandler.Protected().Verify(
-                "SendAsync",
-                Times.Once(),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == HttpMethod.Post &&
-                    req.RequestUri != null &&
-                    req.RequestUri.AbsolutePath == "/machines"
-                ),
-                ItExpr.IsAny<CancellationToken>()
-            );
-        }
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(req =>
+                req.Method == HttpMethod.Post &&
+                req.RequestUri != null &&
+                req.RequestUri.AbsolutePath == "/api/machines"),
+            ItExpr.IsAny<CancellationToken>());
+                }
 
         [Fact]
         public async Task Handle_ShouldThrowApplicationException_WhenThoHRespondsWithError()
@@ -171,7 +171,7 @@ namespace Recycler.Tests.Commands
 
             // Assert
             result.Should().NotBeNull();
-            result.Message.Should().Be("Machine order placed successfully."); 
+            result.Message.Should().Be("Machine order placed successfully.");
         }
     }
 }
