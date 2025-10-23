@@ -6,6 +6,8 @@ using Dapper;
 using Npgsql;
 using Recycler.API.Dto;
 using Recycler.API.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Recycler.API.Services
 {
@@ -18,11 +20,13 @@ namespace Recycler.API.Services
     public class RecyclingService : IRecyclingService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<RecyclingService> _logger;
         private const int MACHINE_PRODUCTION_RATE = 20; 
 
-        public RecyclingService(IConfiguration configuration)
+        public RecyclingService(IConfiguration configuration, ILogger<RecyclingService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         private NpgsqlConnection GetConnection()
@@ -32,10 +36,13 @@ namespace Recycler.API.Services
 
         public async Task<PhoneRecyclingEstimate> EstimateRecyclingYieldAsync(int phoneId, int quantity = 1)
         {
+            _logger.LogInformation("Starting recycling yield estimation for Phone ID {PhoneId} with quantity {Quantity}", phoneId, quantity);
+
             await using var connection = GetConnection();
             await connection.OpenAsync();
+            _logger.LogInformation("Database connection opened for yield estimation");
 
-             var phoneDetailsSql = @"
+            var phoneDetailsSql = @"
                 SELECT 
                     p.id as PhoneId,
                     p.model as Model,
@@ -47,10 +54,15 @@ namespace Recycler.API.Services
                 WHERE p.id = @PhoneId";
 
             var phoneDetails = await connection.QuerySingleOrDefaultAsync<PhoneInventoryDto>(phoneDetailsSql, new { PhoneId = phoneId });
+            _logger.LogInformation("Queried phone details for Phone ID {PhoneId}", phoneId);
             
             if (phoneDetails == null)
+            {
+                _logger.LogWarning("Phone with ID {PhoneId} not found", phoneId);
                 throw new ArgumentException($"Phone with ID {phoneId} not found");
+            }
 
+            _logger.LogInformation("Retrieved phone details: {BrandName} {Model}", phoneDetails.BrandName, phoneDetails.Model);
 
             var ratiosSql = @"
                     SELECT 
@@ -63,6 +75,7 @@ namespace Recycler.API.Services
                 WHERE ppr.phone_id = @PhoneId";
 
             var ratios = await connection.QueryAsync<PhonePartRatioDto>(ratiosSql, new { PhoneId = phoneId });
+            _logger.LogInformation("Fetched part and material ratios for Phone ID {PhoneId}", phoneId);
 
             var materialTotals = new Dictionary<string, double>();
 
@@ -81,6 +94,8 @@ namespace Recycler.API.Services
                     materialTotals[materialName] = totalForQuantity;
             }
 
+            _logger.LogInformation("Calculated estimated materials for Phone ID {PhoneId}: {MaterialCount} materials", phoneId, materialTotals.Count);
+
             return new PhoneRecyclingEstimate
             {
                 PhoneId = phoneId,
@@ -93,9 +108,13 @@ namespace Recycler.API.Services
 
         public async Task<RecyclingResult> StartRecyclingAsync()
         {
+            _logger.LogInformation("Starting recycling process");
+
             await using var connection = GetConnection();
             await connection.OpenAsync();
             await using var transaction = await connection.BeginTransactionAsync();
+
+            _logger.LogInformation("Database connection and transaction started");
 
             try
             {
@@ -104,9 +123,11 @@ namespace Recycler.API.Services
                     FROM Machines";
 
                 var totalMachinesCount = await connection.QuerySingleAsync<int>(totalMachinesSql, transaction: transaction);
+                _logger.LogInformation("Total machines available: {TotalMachines}", totalMachinesCount);
 
                 if (totalMachinesCount == 0)
                 {
+                    _logger.LogWarning("No recycling machines available");
                     return new RecyclingResult
                     {
                         Success = false,
@@ -122,9 +143,11 @@ namespace Recycler.API.Services
                     WHERE is_operational = true";
 
                 var operationalMachinesCount = await connection.QuerySingleAsync<int>(operationalMachinesSql, transaction: transaction);
+                _logger.LogInformation("Operational machines count: {OperationalMachines}", operationalMachinesCount);
 
                 if (operationalMachinesCount == 0)
                 {
+                    _logger.LogWarning("All machines are non-operational");
                     return new RecyclingResult
                     {
                         Success = false,
@@ -149,9 +172,11 @@ namespace Recycler.API.Services
                     ORDER BY pi.quantity DESC";
 
                 var phoneInventories = await connection.QueryAsync<PhoneInventoryDto>(phoneInventoriesSql, transaction: transaction);
+                _logger.LogInformation("Fetched {PhoneCount} phone inventory entries", phoneInventories.Count());
 
                 if (!phoneInventories.Any())
                 {
+                    _logger.LogWarning("No phones available for recycling");
                     return new RecyclingResult
                     {
                         Success = false,
@@ -162,8 +187,12 @@ namespace Recycler.API.Services
                 }
 
                 var totalAvailablePhones = phoneInventories.Sum(pi => pi.AvailableQuantity);
+                _logger.LogInformation("Total available phones: {TotalAvailablePhones}", totalAvailablePhones);
+
                 var phonesToProcess = Math.Min(totalAvailablePhones, maxProcessingCapacity);
                 var actualMachinesUsed = (int)Math.Ceiling((double)phonesToProcess / MACHINE_PRODUCTION_RATE);
+
+                _logger.LogInformation("Phones to process: {PhonesToProcess} using {MachinesUsed} machine(s)", phonesToProcess, actualMachinesUsed);
 
                 var allRecycledMaterials = new List<RecycledMaterialResult>();
                 var processedPhoneModels = new List<string>();
@@ -183,6 +212,8 @@ namespace Recycler.API.Services
                     var quantityToProcess = Math.Min(availableQuantity, remainingCapacity);
                     var quantityRemaining = availableQuantity - quantityToProcess;
 
+                    _logger.LogInformation("Processing {QuantityToProcess}x {BrandName} {Model}", quantityToProcess, brandName, model);
+
                     if (quantityToProcess > 0)
                     {
                         var estimate = await EstimateRecyclingYieldAsync(phoneId, quantityToProcess);
@@ -196,12 +227,16 @@ namespace Recycler.API.Services
                             new { PhoneId = phoneId, QuantityRemaining = quantityRemaining },
                             transaction);
 
+                        _logger.LogInformation("Updated phone inventory for {BrandName} {Model}: Remaining {QuantityRemaining}", brandName, model, quantityRemaining);
+
                         foreach (var (materialName, estimatedQuantity) in estimate.EstimatedMaterials)
                         {
                             var quantityInKg = (int)Math.Floor(estimatedQuantity);
 
                             if (quantityInKg > 0)
                             {
+                                _logger.LogInformation("Recycling {QuantityKg}kg of {MaterialName}", quantityInKg, materialName);
+
                                 var materialIdSql = "SELECT id FROM rawmaterial WHERE name = @MaterialName";
                                 var materialId = await connection.QuerySingleOrDefaultAsync<int?>(materialIdSql, new { MaterialName = materialName }, transaction);
 
@@ -217,6 +252,7 @@ namespace Recycler.API.Services
                                             SET available_quantity_in_kg = available_quantity_in_kg + @Quantity 
                                             WHERE material_id = @MaterialId";
                                         await connection.ExecuteAsync(updateMaterialSql, new { MaterialId = materialId, Quantity = quantityInKg }, transaction);
+                                        _logger.LogInformation("Updated material inventory: {MaterialName} +{QuantityKg}kg", materialName, quantityInKg);
                                     }
                                     else
                                     {
@@ -224,6 +260,7 @@ namespace Recycler.API.Services
                                             INSERT INTO materialinventory (material_id, available_quantity_in_kg) 
                                             VALUES (@MaterialId, @Quantity)";
                                         await connection.ExecuteAsync(insertMaterialSql, new { MaterialId = materialId, Quantity = quantityInKg }, transaction);
+                                        _logger.LogInformation("Inserted new material inventory: {MaterialName} {QuantityKg}kg", materialName, quantityInKg);
                                     }
 
                                     var existingMaterial = allRecycledMaterials.FirstOrDefault(rm => rm.MaterialId == materialId.Value);
@@ -249,7 +286,7 @@ namespace Recycler.API.Services
                         processedPhoneModels.Add($"{quantityToProcess}x {brandName} {model}");
                         totalProcessedCount += quantityToProcess;
                     }
-                    
+
                 }
 
                 var leftoverPhones = totalAvailablePhones - totalProcessedCount;
@@ -257,7 +294,10 @@ namespace Recycler.API.Services
                     ? $"Recycling process completed! Processed {totalProcessedCount} phones using {actualMachinesUsed} recycling machine(s). {leftoverPhones} phones remain in inventory due to machine capacity limits. Processed: {string.Join(", ", processedPhoneModels)}"
                     : $"Recycling process completed! Processed all {totalProcessedCount} phones using {actualMachinesUsed} recycling machine(s). Processed: {string.Join(", ", processedPhoneModels)}";
 
-                var result = new RecyclingResult
+                await transaction.CommitAsync();
+                _logger.LogInformation("Transaction committed successfully. Recycling complete.");
+
+                return new RecyclingResult
                 {
                     Success = true,
                     Message = successMessage,
@@ -266,20 +306,22 @@ namespace Recycler.API.Services
                     PhonesProcessed = totalProcessedCount,
                     ProcessingDate = DateTime.UtcNow,
                 };
-                await transaction.CommitAsync();
-                return result;
+
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Recycling process failed with error: {ErrorMessage}", ex.Message);
+
                 if (transaction != null && transaction.Connection != null)
                 {
                     try
                     {
                         await transaction.RollbackAsync();
+                        _logger.LogWarning("Transaction rolled back due to error");
                     }
                     catch (InvalidOperationException)
                     {
-                        // Transaction was already completed
+                        _logger.LogWarning("Transaction already completed, rollback skipped");
                     }
                 }
                 return new RecyclingResult
