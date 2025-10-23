@@ -197,5 +197,5 @@ app.MapGet("/logs", async (HttpContext context) =>
 
     var logContent = await File.ReadAllTextAsync(logFilePath);
     return Results.Text(logContent, "text/plain");
-});
+}).RequireCors("InternalApiCors");
 await app.RunAsync();
