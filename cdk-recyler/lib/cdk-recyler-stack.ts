@@ -1,15 +1,12 @@
 import * as cdk from 'aws-cdk-lib';
+import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
-import { S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
-import * as targets from 'aws-cdk-lib/aws-route53-targets';
-import * as albtargets from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets';
-import * as rds from 'aws-cdk-lib/aws-rds';
+import * as iam from 'aws-cdk-lib/aws-iam'; // Add IAM import for bucket policy
+import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
-import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 
 export class CdkRecylerStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -20,6 +17,13 @@ export class CdkRecylerStack extends cdk.Stack {
 
     const hostedZone = new route53.HostedZone(this, 'HostedZone', {
       zoneName: domainName
+    })
+
+    // Add this after your hostedZone creation
+    const certificate = new certificatemanager.Certificate(this, 'Certificate', {
+      domainName: domainName,
+      subjectAlternativeNames: [`*.${domainName}`],
+      validation: certificatemanager.CertificateValidation.fromDns(hostedZone),
     })
 
     //GENERAL
@@ -47,6 +51,40 @@ export class CdkRecylerStack extends cdk.Stack {
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443), "HTTPS");
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(22), "SSH");
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(5432), "POSTGRES"); // optional
+
+    //FRONT ENED STUFF
+    const websiteBucket = new s3.Bucket(this, 'WebsiteBucket', {
+      bucketName: `recycler-website-${cdk.Stack.of(this).account}`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Use RETAIN for production
+      autoDeleteObjects: true, // Only use with DESTROY policy
+      websiteIndexDocument: 'index.html',
+      websiteErrorDocument: 'error.html',
+      publicReadAccess: false, // CloudFront will access via OAI
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+    });
+
+    // Add this after the S3 bucket
+    const distribution = new Distribution(this, 'WebsiteDistribution', {
+      defaultBehavior: {
+        origin: new S3Origin(websiteBucket),
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      domainNames: [domainName],
+      certificate: certificate,
+      defaultRootObject: 'index.html',
+    });
+
+    // GRANT CLOUDFRONT ACCESS TO S3 BUCKET
+    websiteBucket.addToResourcePolicy(new iam.PolicyStatement({
+      actions: ['s3:GetObject'],
+      resources: [websiteBucket.arnForObjects('*')],
+      principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
+      conditions: {
+        StringEquals: {
+          'AWS:SourceArn': `arn:aws:cloudfront::${cdk.Stack.of(this).account}:distribution/${distribution.distributionId}`,
+        },
+      },
+    }));
 
     //BACKEND STUFF
     const ec2Instance = new ec2.Instance(this, "backend", {

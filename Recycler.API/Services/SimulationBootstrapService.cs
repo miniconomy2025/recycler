@@ -12,7 +12,6 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
     private readonly BankAccountService _accountService;
     private readonly LoanService _loanService;
     private readonly MachineMarketService _marketService;
-    private readonly ISimulationBootstrapService _bootstrapService;
     private readonly ILogger<SimulationBootstrapService> _logger;
 
     public SimulationBootstrapService(
@@ -23,7 +22,6 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
         BankAccountService accountService,
         LoanService loanService,
         MachineMarketService marketService,
-        ISimulationBootstrapService bootstrapService,
         ILogger<SimulationBootstrapService> logger)
     {
         _config = config;
@@ -33,7 +31,6 @@ public class SimulationBootstrapService :  ISimulationBootstrapService
         _accountService = accountService;
         _loanService = loanService;
         _marketService = marketService;
-        _bootstrapService = bootstrapService;
         _logger = logger;
     }
 
