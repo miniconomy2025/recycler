@@ -21,6 +21,7 @@ public class Startup(WebApplicationBuilder builder)
         builder.Services.AddScoped<ThohService>();
 
         builder.Services.AddHostedService<ThohBackgroundService>();
+        builder.Services.AddHostedService<ThohPhonesPollingService>();
 
         var consumerLogisticsUrl = builder.Configuration["consumerLogistic"] ?? "http://localhost:8086";
         var bankUrl = builder.Configuration["commercialBankUrl"] ?? "http://localhost:8085";
@@ -43,5 +44,6 @@ public class Startup(WebApplicationBuilder builder)
         builder.Services.AddScoped<CommercialBankService>();
         builder.Services.AddScoped<ThohService>();
         builder.Services.AddScoped<ConsumerLogisticsService>();
+        builder.Services.AddScoped<AvailablePhonesNotificationService>();
     }
 }

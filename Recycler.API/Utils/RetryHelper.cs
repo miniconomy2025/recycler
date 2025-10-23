@@ -12,8 +12,12 @@ namespace Recycler.API.Utils
             {
                 try
                 {
-                    Console.WriteLine($"Attempting {operationName}");
-                    return await action();
+                    Console.WriteLine($"Attempting {operationName ?? "operation"} (Attempt {attempt}/{maxAttempts})...");
+                    var result = await action();
+
+                    Console.WriteLine($"{operationName ?? "Operation"} succeeded on attempt {attempt}.");
+                    Console.WriteLine($"Response: {result}");
+                    return result;
                 }
                 catch (Exception ex) when (attempt < maxAttempts)
                 {
