@@ -88,7 +88,14 @@ builder.Services.AddTransient<GlobalHeaderHandler>();
 
 builder.Services.AddHttpClient("test")
     .AddHttpMessageHandler<HttpLoggingHandler>()
-    .AddHttpMessageHandler<GlobalHeaderHandler>();
+    .AddHttpMessageHandler<GlobalHeaderHandler>()
+    .ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        return new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+    });
 
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
