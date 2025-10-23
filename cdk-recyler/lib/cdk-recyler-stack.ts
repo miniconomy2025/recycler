@@ -7,6 +7,7 @@ import * as iam from 'aws-cdk-lib/aws-iam'; // Add IAM import for bucket policy
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import * as targets from 'aws-cdk-lib/aws-route53-targets'
 
 export class CdkRecylerStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -75,16 +76,22 @@ export class CdkRecylerStack extends cdk.Stack {
     });
 
     // GRANT CLOUDFRONT ACCESS TO S3 BUCKET
-    websiteBucket.addToResourcePolicy(new iam.PolicyStatement({
-      actions: ['s3:GetObject'],
-      resources: [websiteBucket.arnForObjects('*')],
-      principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
-      conditions: {
-        StringEquals: {
-          'AWS:SourceArn': `arn:aws:cloudfront::${cdk.Stack.of(this).account}:distribution/${distribution.distributionId}`,
+      websiteBucket.addToResourcePolicy(new iam.PolicyStatement({
+        actions: ['s3:GetObject'],
+        resources: [websiteBucket.arnForObjects('*')],
+        principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
+        conditions: {
+          StringEquals: {
+            'AWS:SourceArn': `arn:aws:cloudfront::${cdk.Stack.of(this).account}:distribution/${distribution.distributionId}`,
+          },
         },
-      },
-    }));
+      }));
+
+    const websiteARecord = new route53.ARecord(this, 'websiteARecord', {
+      zone: hostedZone,
+      recordName: domainName,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+    });
 
     //BACKEND STUFF
     const ec2Instance = new ec2.Instance(this, "backend", {

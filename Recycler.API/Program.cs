@@ -129,7 +129,7 @@ app.Use(async (context, next) =>
         {
             if (header.Key == "Client-Id") clientid = $"{header.Value}";
         }
-        if (clientid != "thoh")
+        if (clientid != "idPutSomethingToBlockHere")
         {
             Console.WriteLine($"HTTP {context.Request.Method} {context.Request.Path}");
             Console.WriteLine($"FROM:\t{clientid}");
