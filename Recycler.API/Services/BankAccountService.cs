@@ -12,6 +12,7 @@ public class BankAccountService
         _http = factory.CreateClient("test");
         var bankUrl = config["commercialBankUrl"] ?? "http://localhost:8085";
         _http.BaseAddress = new Uri(bankUrl);
+        Console.WriteLine($"\n\n\n\n{_http.BaseAddress}\n\n\n\n");
         _logger = logger;
     }
 
@@ -19,7 +20,7 @@ public class BankAccountService
     {
         _logger.LogInformation("Attempting to register bank account with notification URL: {NotificationUrl}", notificationUrl);
         var response = await RetryHelper.RetryAsync(
-            () => _http.PostAsJsonAsync("/api/account", new { notification_url = notificationUrl }, cancellationToken),
+            () => _http.PostAsJsonAsync("api/account", new { notification_url = notificationUrl }, cancellationToken),
             operationName: "Create bank account");
 
         _logger.LogInformation("Bank account creation response status: {StatusCode}", response.StatusCode);
@@ -28,7 +29,7 @@ public class BankAccountService
         {
             _logger.LogInformation("Account already exists, fetching existing account details");
             response = await RetryHelper.RetryAsync(
-            () => _http.GetAsync("/api/account/me", cancellationToken),
+            () => _http.GetAsync("api/account/me", cancellationToken),
             operationName: "Check bank account");
         }
 

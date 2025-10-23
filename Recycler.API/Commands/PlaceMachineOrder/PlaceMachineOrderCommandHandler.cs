@@ -27,7 +27,7 @@ namespace Recycler.API.Commands
         {
             _logger.LogInformation("Placing machine order - Machine: {MachineName}, Quantity: {Quantity}", 
                 request.machineName, request.quantity);
-            
+
             var thoHApiBaseUrl = _configuration["thoHApiUrl"] ?? "http://localhost:5001";
             _httpClient.BaseAddress = new Uri(thoHApiBaseUrl);
             _logger.LogInformation("THoH API base URL: {ThoHUrl}", thoHApiBaseUrl);
@@ -45,7 +45,7 @@ namespace Recycler.API.Commands
             try
             {
                 _logger.LogInformation("Sending machine order to THoH API endpoint: /machines");
-                var response = await _httpClient.PostAsync("/machines", httpContent, cancellationToken);
+                var response = await _httpClient.PostAsync("machines", httpContent, cancellationToken);
                 _logger.LogInformation("THoH API response status: {StatusCode}", response.StatusCode);
 
                 if (response.IsSuccessStatusCode)

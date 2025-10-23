@@ -20,7 +20,7 @@ public class MachineMarketService
         _logger.LogInformation("Fetching available machines from THoH market");
         
         var response = await RetryHelper.RetryAsync(
-            () => _http.GetAsync("/machines", cancellationToken),
+            () => _http.GetAsync("machines", cancellationToken),
             operationName: "Fetch machines");
 
         _logger.LogInformation("Machines API response status: {StatusCode}", response.StatusCode);
