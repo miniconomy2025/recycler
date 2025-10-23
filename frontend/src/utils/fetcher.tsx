@@ -4,7 +4,7 @@ import { FetcherOptions } from "../types";
 export async function fetcher<T>(url: string, options?: FetcherOptions): Promise<T> {
   try {
 
-    const baseURL = process.env.REACT_APP_API_URL || 'https://recycler-api.projects.bbdgrad.com'; 
+    const baseURL = process.env.REACT_APP_API_URL || 'https://api.recycler.susnet.co.za'; 
 
     const endpointMapping: Record<string, string> = {
       '/dashboard': '/internal/stock', 
