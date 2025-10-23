@@ -41,7 +41,6 @@ jobs:
       
     - name: Run full load tests
       run: dotnet run --project Recycler.API.LoadTests/Recycler.API.LoadTests.csproj
-      working-directory: Recycler.API.LoadTests
       timeout-minutes: 30
       env:
         RECYCLER_API_URL: ${{ github.event.inputs.api_url || 'https://api.recycler.susnet.co.za' }}
