@@ -18,12 +18,12 @@ namespace Recycler.API.LoadTests.Scenarios
                     var simulationData = new
                     {
                         SimulationId = Guid.NewGuid().ToString(),
-                        Duration = context.Random.Next(60, 300), // 1-5 minutes
+                        Duration = context.Random.Next(60, 300),
                         Parameters = new
                         {
-                            RecyclingRate = context.Random.NextDouble() * 0.5 + 0.5, // 0.5-1.0
-                            MachineEfficiency = context.Random.NextDouble() * 0.3 + 0.7, // 0.7-1.0
-                            MaterialQuality = context.Random.NextDouble() * 0.4 + 0.6 // 0.6-1.0
+                            RecyclingRate = context.Random.NextDouble() * 0.5 + 0.5,
+                            MachineEfficiency = context.Random.NextDouble() * 0.3 + 0.7,
+                            MaterialQuality = context.Random.NextDouble() * 0.4 + 0.6
                         }
                     };
 
@@ -45,3 +45,5 @@ namespace Recycler.API.LoadTests.Scenarios
         }
     }
 }
+
+

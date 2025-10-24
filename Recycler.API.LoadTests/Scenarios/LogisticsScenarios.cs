@@ -21,8 +21,8 @@ namespace Recycler.API.LoadTests.Scenarios
                         Type = context.Random.Next(0, 2) == 0 ? "PICKUP" : "DELIVERY",
                         Items = new[]
                         {
-                            new { ItemId = Guid.NewGuid().ToString(), Quantity = context.Random.Next(1, 10), Type = "Phone" },
-                            new { ItemId = Guid.NewGuid().ToString(), Quantity = context.Random.Next(1, 5), Type = "Battery" }
+                            new { ItemId = Guid.NewGuid().ToString(), Quantity = context.Random.Next(1, 10), Type = "Copper" },
+                            new { ItemId = Guid.NewGuid().ToString(), Quantity = context.Random.Next(1, 5), Type = "Sand" }
                         }
                     };
 
@@ -52,7 +52,7 @@ namespace Recycler.API.LoadTests.Scenarios
                         var consumerDeliveryData = new
                         {
                             Status = "DELIVERED",
-                            ModelName = $"Phone_{context.Random.Next(1, 10)}",
+                            ModelName = "Sumsang Cosmos Z25 ultra",
                             Quantity = context.Random.Next(1, 5)
                         };
 
@@ -74,3 +74,5 @@ namespace Recycler.API.LoadTests.Scenarios
         }
     }
 }
+
+

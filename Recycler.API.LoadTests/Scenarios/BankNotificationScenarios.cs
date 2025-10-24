@@ -18,8 +18,8 @@ namespace Recycler.API.LoadTests.Scenarios
                     var bankNotificationData = new
                     {
                         transaction_number = Guid.NewGuid().ToString(),
-                        status = "success",
-                        description = context.Random.Next(1, 1000).ToString(),
+                        status = context.Random.Next(2) == 0 ? "Success" : "Failure",
+                        description = "You got paid - Load Test",
                         amount = context.Random.Next(100, 5000),
                         timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
                     };
@@ -42,3 +42,5 @@ namespace Recycler.API.LoadTests.Scenarios
         }
     }
 }
+
+

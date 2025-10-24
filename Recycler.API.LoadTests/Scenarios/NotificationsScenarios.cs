@@ -37,8 +37,8 @@ namespace Recycler.API.LoadTests.Scenarios
                     var failureData = new
                     {
                         MachineId = Guid.NewGuid().ToString(),
-                        FailureType = "Mechanical",
-                        Description = "Test failure for load testing",
+                        FailureType = "Recycler",
+                        Description = "Load testing",
                         Severity = "Medium"
                     };
 
@@ -60,3 +60,5 @@ namespace Recycler.API.LoadTests.Scenarios
         }
     }
 }
+
+
