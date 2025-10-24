@@ -19,7 +19,6 @@ namespace Recycler.API.LoadTests.Scenarios
                 OrdersScenarios.CreateGetOrderByIdScenario(httpClient, config),
                 OrdersScenarios.CreateGetOrderByOrderNumberScenario(httpClient, config),
                 OrdersScenarios.CreateCreateOrderScenario(httpClient, config),
-                RevenueScenarios.CreateGetRevenueScenario(httpClient, config),
                 NotificationsScenarios.CreateNotifyMeScenario(httpClient, config),
                 NotificationsScenarios.CreateMachineFailureScenario(httpClient, config),
                 BankNotificationScenarios.CreateBankNotificationScenario(httpClient, config),
@@ -42,3 +41,5 @@ namespace Recycler.API.LoadTests.Scenarios
 
     }
 }
+
+

@@ -1,4 +1,4 @@
-name: Full Load Tests
+name: Full Load Tests & Performance Tests
 
 on:
   push:
@@ -18,10 +18,21 @@ on:
         required: false
         default: 'https://api.recycler.susnet.co.za'
         type: string
+      test_type:
+        description: 'Type of tests to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - 'all'
+        - 'load'
+        - 'performance'
+        - 'stress'
+        - 'spike'
 
 jobs:
-  full-load-tests:
-    name: Full Load Tests
+  load-and-performance-tests:
+    name: Load & Performance Tests
     runs-on: ubuntu-latest
     
     steps:
@@ -39,9 +50,27 @@ jobs:
     - name: Build project
       run: dotnet build Recycler.API.LoadTests/Recycler.API.LoadTests.csproj --no-restore
       
-    - name: Run full load tests
+    - name: Run load tests
       run: dotnet run --project Recycler.API.LoadTests/Recycler.API.LoadTests.csproj
       timeout-minutes: 30
+      env:
+        recyclerApi__baseUrl: ${{ github.event.inputs.api_url || 'https://api.recycler.susnet.co.za' }}
+        
+    - name: Run performance tests
+      run: dotnet run --project Recycler.API.LoadTests/Recycler.API.LoadTests.csproj performance
+      timeout-minutes: 15
+      env:
+        recyclerApi__baseUrl: ${{ github.event.inputs.api_url || 'https://api.recycler.susnet.co.za' }}
+        
+    - name: Run stress tests
+      run: dotnet run --project Recycler.API.LoadTests/Recycler.API.LoadTests.csproj stress
+      timeout-minutes: 10
+      env:
+        recyclerApi__baseUrl: ${{ github.event.inputs.api_url || 'https://api.recycler.susnet.co.za' }}
+        
+    - name: Run spike tests
+      run: dotnet run --project Recycler.API.LoadTests/Recycler.API.LoadTests.csproj spike
+      timeout-minutes: 8
       env:
         recyclerApi__baseUrl: ${{ github.event.inputs.api_url || 'https://api.recycler.susnet.co.za' }}
         
@@ -51,5 +80,29 @@ jobs:
       with:
         name: load-test-reports
         path: Recycler.API.LoadTests/load_test_reports/
+        retention-days: 30
+        
+    - name: Upload performance test reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-test-reports
+        path: Recycler.API.LoadTests/performance_test_reports/
+        retention-days: 30
+        
+    - name: Upload stress test reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: stress-test-reports
+        path: Recycler.API.LoadTests/stress_test_reports/
+        retention-days: 30
+        
+    - name: Upload spike test reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: spike-test-reports
+        path: Recycler.API.LoadTests/spike_test_reports/
         retention-days: 30
         

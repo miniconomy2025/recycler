@@ -63,8 +63,8 @@ namespace Recycler.API.LoadTests.Scenarios
                         CustomerEmail = $"test{Guid.NewGuid().ToString("N")[..8]}@example.com",
                         Items = new[]
                         {
-                            new { ItemName = "Recycling Machine", Quantity = context.Random.Next(1, 3), Price = context.Random.Next(1000, 5000) },
-                            new { ItemName = "Maintenance Kit", Quantity = context.Random.Next(1, 2), Price = context.Random.Next(100, 500) }
+                            new { ItemName = "Copper", Quantity = context.Random.Next(1, 5) * 1000, Price = context.Random.Next(1000, 5000) },
+                            new { ItemName = "Sand", Quantity = context.Random.Next(1, 5) * 1000, Price = context.Random.Next(100, 500) }
                         },
                         TotalAmount = context.Random.Next(2000, 10000)
                     };
@@ -87,3 +87,5 @@ namespace Recycler.API.LoadTests.Scenarios
         }
     }
 }
+
+

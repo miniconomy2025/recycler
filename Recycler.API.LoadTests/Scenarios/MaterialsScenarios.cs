@@ -14,11 +14,37 @@ namespace Recycler.API.LoadTests.Scenarios
                 try
                 {
                     var response = await httpClient.GetAsync("/materials");
-                    return Response.Ok(statusCode: response.StatusCode.ToString());
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var responseTime = response.Headers.Date?.DateTime ?? DateTime.UtcNow;
+                        
+                        return Response.Ok(
+                            statusCode: response.StatusCode.ToString(),
+                            content.Length
+                        );
+                    }
+                    else
+                    {
+                        return Response.Fail(
+                            $"HTTP {response.StatusCode}: {response.ReasonPhrase}",
+                            response.StatusCode.ToString(),
+                            0
+                        );
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    return Response.Fail($"Network error: {ex.Message}", "NETWORK_ERROR", 0);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    return Response.Fail($"Timeout: {ex.Message}", "TIMEOUT", 0);
                 }
                 catch (Exception ex)
                 {
-                    return Response.Fail(ex.Message, "500", 0, 0);
+                    return Response.Fail($"Unexpected error: {ex.Message}", "UNKNOWN_ERROR", 0);
                 }
             })
             .WithLoadSimulations(
@@ -27,3 +53,5 @@ namespace Recycler.API.LoadTests.Scenarios
         }
     }
 }
+
+
