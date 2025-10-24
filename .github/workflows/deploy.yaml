@@ -25,3 +25,22 @@ jobs:
       SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
       SERVER_CONFIG: ${{secrets.SERVER_CONFIG}}
       START_UP: ${{vars.START_UP}}
+
+  dotnet_tests:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Deploy
+        run: |
+          cd Recycler.Tests
+          dotnet test
+    env:
+      SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+      SERVER_CONFIG: ${{secrets.SERVER_CONFIG}}
+      START_UP: ${{vars.START_UP}}
