@@ -46,7 +46,31 @@ try:
         )
         assert el.is_displayed(), f"Material missing: {material}"
 
-    print("✅ All UI checks passed — page looks good!")
+    # go to stocks page
+    stock_link = wait.until(
+        EC.element_to_be_clickable((By.LINK_TEXT, "Stock"))
+    )
+    stock_link.click()
+
+    expected_materials = ["Copper", "Silicon", "Sand", "Plastic", "Aluminum"]
+    for material in expected_materials:
+        el = wait.until(
+            EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{material}')]"))
+        )
+        assert el.is_displayed(), f"Material missing: {material}"
+
+        # go to stocks page
+    stock_link = wait.until(
+        EC.element_to_be_clickable((By.LINK_TEXT, "Phones"))
+    )
+    stock_link.click()
+
+    expected_materials = ["Available Phones"]
+    for material in expected_materials:
+        el = wait.until(
+            EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{material}')]"))
+        )
+        assert el.is_displayed(), f"Material missing: {material}"
 
 finally:
     driver.quit()
