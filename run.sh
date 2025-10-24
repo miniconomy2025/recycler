@@ -40,4 +40,5 @@ cd Recycler.API
 export ASPNETCORE_ENVIRONMENT=Production
 export DOTNET_ENVIRONMENT=Production
 rm -rf app.log
+dotnet test
 nohup dotnet run > app.log 2>&1 &
